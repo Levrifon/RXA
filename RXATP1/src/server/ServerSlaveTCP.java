@@ -15,8 +15,7 @@ public class ServerSlaveTCP extends Thread {
 		this.socket = socketFromMaster;
 		this.master = server;
 		try {
-			input = new BufferedReader(new InputStreamReader(
-					socket.getInputStream()));
+			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -26,20 +25,19 @@ public class ServerSlaveTCP extends Thread {
 	public void run() {
 		String newMessage;
 		try {
+				message = "";
 			while (!(message = input.readLine()).startsWith("bye")) {
 				if (!message.startsWith(" ") && !message.isEmpty()) {
-					System.out.println("Connexion sur :"
-							+ socket.getInetAddress());
+					System.out.println("Connexion sur :"+ socket.getInetAddress());
 					System.out.println("Chaîne reçue : " + message + "\n");
-					newMessage = "Message reçu de " + socket.getInetAddress()
-							+ " : " + message + "\n";
+					newMessage = "Message reçu de " + socket.getInetAddress()+ " : " + message + "\n";
 					master.repeterMessage(newMessage, this);
 				}
 			}
-			socket.close();
+			this.socket.close();
 		} catch (IOException e) {
 			try {
-				socket.close();
+				this.socket.close();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
