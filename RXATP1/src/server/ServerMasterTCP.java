@@ -42,7 +42,7 @@ public class ServerMasterTCP {
 
 	
 
-	public void repeterMessage(String message, ServerSlaveTCP source)
+	public synchronized void repeterMessage(String message, ServerSlaveTCP source)
 			throws IOException {
 		for (Socket slave : liste_sockets) {
 			if(slave.isClosed()) {

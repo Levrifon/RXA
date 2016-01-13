@@ -24,10 +24,9 @@ public class ServerSlaveTCP extends Thread {
 
 	@Override
 	public void run() {
-		BufferedReader streaminput = new BufferedReader(input);
 		String newMessage;
 		try {
-			while (!(message = streaminput.readLine()).startsWith("bye")) {
+			while (!(message = input.readLine()).startsWith("bye")) {
 				if (!message.startsWith(" ") && !message.isEmpty()) {
 					System.out.println("Connexion sur :"
 							+ socket.getInetAddress());
