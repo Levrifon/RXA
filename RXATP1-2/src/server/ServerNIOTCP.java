@@ -23,6 +23,7 @@ public class ServerNIOTCP implements Runnable {
 	public ServerNIOTCP(int port) {
 		try {
 			this.selector = this.initSelector();
+			selector.
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
