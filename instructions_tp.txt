@@ -1,0 +1,18 @@
+accept, lecture , ecriture = peut être bloquant en réseau
+
+Si on veut gérer dans le même Thread => Selector
+
+On a N socket a disposition
+On aimerait faire un accept sur l'un , read sur l'autre ...
+On donne le Set de toute les sockets sur lesquelles on veut faire quelque chose et on le donne au selector (qui va bloquer jusqu'à évènement sur un socket)
+
+
+./echo nb => envoie nb octet et les renvoies
+
+./ack nb => renvoie un accusé lors de la réception des nb octets
+
+./testtcp [echo|ack|compute] <size> IP1 {IP2;IP3..}
+
+Noter le débit = temps pour x octets
+
+Meilleure entre garder la connection tout envoyer ou envoyer et changer de connection a chaque fois
