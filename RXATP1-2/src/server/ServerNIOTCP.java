@@ -1,87 +1,100 @@
 package server;
 
+import java.net.*;
+import java.nio.*;
+import java.nio.channels.*;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
-public class ServerNIOTCP {
-	private ServerSocketChannel serverSocket;
-	private SelectionKey key;
+public class ServerNIOTCP implements Runnable {
+	private final int port;
+	private ServerSocketChannel ssc;
 	private Selector selector;
-	private InetSocketAddress address;
+	private ByteBuffer buf = ByteBuffer.allocate(256);
 
-	public ServerNIOTCP(int port) {
+	ServerNIOTCP(int port) throws IOException {
+		this.port = port;
+		this.ssc = ServerSocketChannel.open();
+		this.ssc.socket().bind(new InetSocketAddress(port));
+		this.ssc.configureBlocking(false);
+		this.selector = Selector.open();
+
+		this.ssc.register(selector, SelectionKey.OP_ACCEPT);
+	}
+
+	public void run() {
 		try {
-			selector = Selector.open();
-			serverSocket = ServerSocketChannel.open();
-			address = new InetSocketAddress("localhost", port);
-			serverSocket.bind(address);
-			serverSocket.configureBlocking(false);
-		} catch (IOException e) {
+			System.out.println("Server starting on port " + this.port);
+
+			Iterator<SelectionKey> iter;
+			SelectionKey key;
+			while(this.ssc.isOpen()) {
+				selector.select();
+				iter=this.selector.selectedKeys().iterator();
+				while(iter.hasNext()) {
+					key = iter.next();
+					iter.remove();
+
+					if(key.isAcceptable()) this.handleAccept(key);
+					if(key.isReadable()) this.handleRead(key);
+				}
+			}
+		} catch(IOException e) {
+			System.out.println("IOException, server of port " +this.port+ " terminating. Stack trace:");
 			e.printStackTrace();
 		}
-		int ops = serverSocket.validOps();
-		try {
-			key = serverSocket.register(selector, ops, null);
-		} catch (ClosedChannelException e1) {
-			e1.printStackTrace();
+	}
+
+	private final ByteBuffer welcomeBuf = ByteBuffer.wrap("Welcome to NioChat!\n".getBytes());
+	private void handleAccept(SelectionKey key) throws IOException {
+		SocketChannel sc = ((ServerSocketChannel) key.channel()).accept();
+		String address = (new StringBuilder( sc.socket().getInetAddress().toString() )).append(":").append( sc.socket().getPort() ).toString();
+		sc.configureBlocking(false);
+		sc.register(selector, SelectionKey.OP_READ, address);
+		sc.write(welcomeBuf);
+		welcomeBuf.rewind();
+		System.out.println("accepted connection from: "+address);
+	}
+
+	private void handleRead(SelectionKey key) throws IOException {
+		SocketChannel ch = (SocketChannel) key.channel();
+		StringBuilder sb = new StringBuilder();
+
+		buf.clear();
+		int read = 0;
+		while( (read = ch.read(buf)) > 0 ) {
+			buf.flip();
+			byte[] bytes = new byte[buf.limit()];
+			buf.get(bytes);
+			sb.append(new String(bytes));
+			buf.clear();
 		}
-		for (;;) {
+		String msg;
+		if(read<0) {
+			msg = key.attachment()+" left the chat.\n";
+			ch.close();
+		}
+		else {
+			msg = key.attachment()+": "+sb.toString();
+		}
 
-			System.out.println("Waiting for connections...");
-			int noOfKeys = 0;
-			try {
-				noOfKeys = selector.select();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+		System.out.println(msg);
+		broadcast(msg);
+	}
 
-			System.out.println("Number of connections: " + noOfKeys);
-
-			Set selectedKeys = selector.selectedKeys();
-			Iterator<SelectionKey> iter = selectedKeys.iterator();
-			while (iter.hasNext()) {
-				SelectionKey ky = iter.next();
-				if (ky.isAcceptable()) {
-					SocketChannel client = null;
-					try {
-						client = serverSocket.accept();
-						client.configureBlocking(false);
-						client.register(selector, SelectionKey.OP_READ);
-					} catch (IOException e2) {
-						e2.printStackTrace();
-					}
-				} else if (ky.isReadable()) {
-					SocketChannel client = (SocketChannel) ky.channel();
-					ByteBuffer buffer = ByteBuffer.allocate(256);
-					try {
-						client.read(buffer);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					String output = new String(buffer.array()).trim();
-
-					System.out.println("Message read from client: " + output);
-
-					if (output.equals("Bye.")) {
-						try {
-							client.close();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						System.out
-								.println("Bye bye !.");
-					}
-				}
-				iter.remove();
+	private void broadcast(String msg) throws IOException {
+		ByteBuffer msgBuf=ByteBuffer.wrap(msg.getBytes());
+		for(SelectionKey key : selector.keys()) {
+			if(key.isValid() && key.channel() instanceof SocketChannel) {
+				SocketChannel sch= (SocketChannel) key.channel();
+				sch.write(msgBuf);
+				msgBuf.rewind();
 			}
 		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		ServerNIOTCP server = new ServerNIOTCP(10523);
+		(new Thread(server)).start();
 	}
 }
