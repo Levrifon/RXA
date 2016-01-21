@@ -56,7 +56,7 @@ public class ServerSlaveTCP extends Thread {
 					/* on répète le message sur tous les autres slaves */
 					if (master.activatedCommand() != null) {
 						if (master.activatedCommand().equals("echo")) {
-
+							System.out.println("La commande echo est activee");
 						} else {
 							master.repeterMessage(newMessage, socket);
 						}
