@@ -62,6 +62,7 @@ public class ServerMasterTCP {
 		case "echo":
 			this.echoCommand = !echoCommand;
 			currentCommand = cmd;
+			System.out.println("Coucou echo");
 			break;
 		case "ack":
 			this.ackCommand = !ackCommand;

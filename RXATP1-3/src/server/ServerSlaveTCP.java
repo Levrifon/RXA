@@ -44,35 +44,47 @@ public class ServerSlaveTCP extends Thread {
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye")) {
 				/* si le message n'est pas vide ou n'est pas égale a un espace */
-				if (!message.startsWith(" ") && !message.isEmpty() && !message.startsWith("/echo") && !message.startsWith("/ack") && !message.startsWith("/compute") ) {
-					System.out.println("Connexion sur :"+ socket.getInetAddress());
+				if (!message.startsWith(" ") && !message.isEmpty()
+						&& !message.startsWith("/echo")
+						&& !message.startsWith("/ack")
+						&& !message.startsWith("/compute")) {
+					System.out.println("Connexion sur :"
+							+ socket.getInetAddress());
 					System.out.println("Chaîne reçue : " + message + "\n");
-					newMessage = "Message reçu de " + socket.getInetAddress()+ " : " + message + "\n";
+					newMessage = "Message reçu de " + socket.getInetAddress()
+							+ " : " + message + "\n";
 					/* on répète le message sur tous les autres slaves */
-					if(master.activatedCommand().equals("echo")) {
-						
-					}else {
-						master.repeterMessage(newMessage, socket);
+					if (master.activatedCommand() != null) {
+						if (master.activatedCommand().equals("echo")) {
+
+						} else {
+							master.repeterMessage(newMessage, socket);
+						}
 					}
 				} else {
 					String[] array = message.split(" ");
-					if(array.length < 2) { break;}
-					String command = array[0];
-					int nb = Integer.parseInt(array[1]);
-					switch(command) {
+					if (array.length < 2) {
+						System.out.println("tata");
+					} else {
+						String command = array[0];
+						int nb = Integer.parseInt(array[1]);
+						switch (command) {
 						case "/echo":
-						master.toggleCommand("echo");
-						break;
+							master.toggleCommand("echo");
+							break;
 						case "/ack":
-						master.toggleCommand("ack");
-						break;
+							master.toggleCommand("ack");
+							break;
 						case "/compute":
-						master.toggleCommand("compute");
-						break;
+							master.toggleCommand("compute");
+							break;
+						}
 					}
 				}
 			}
-			message = socket.getInetAddress() + "," + socket.getPort() + " is leaving";
+			System.out.println("toto");
+			message = socket.getInetAddress() + "," + socket.getPort()
+					+ " is leaving";
 			master.removeSlave(this);
 			master.repeterMessage(message, socket);
 			this.interrupt();
