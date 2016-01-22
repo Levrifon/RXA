@@ -58,20 +58,39 @@ public class ServerMasterTCP {
 	}
 
 	public void toggleCommand(String cmd) {
+		this.echoCommand = false;
+		this.ackCommand = false;
+		this.cmptCommand = false;
+		if(cmd.equals("")) {return;}
+		currentCommand = cmd;
 		switch (cmd) {
 		case "echo":
-			this.echoCommand = !echoCommand;
-			currentCommand = cmd;
+			this.echoCommand = true;
 			System.out.println("Coucou echo");
 			break;
 		case "ack":
-			this.ackCommand = !ackCommand;
+			this.ackCommand = true;
+			System.out.println("Coucou ack");
 			break;
 		case "compute":
-			this.cmptCommand = !cmptCommand;
+			this.cmptCommand = true;
+			System.out.println("Coucou compute");
 			break;
 		default:
 			break;
+		}
+	}
+
+	public boolean isActivated(String cmd) {
+		switch (cmd) {
+		case "echo":
+			return echoCommand;
+		case "ack":
+			return ackCommand;
+		case "compute":
+			return cmptCommand;
+		default:
+			return false;
 		}
 	}
 

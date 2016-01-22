@@ -44,19 +44,17 @@ public class ServerSlaveTCP extends Thread {
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye")) {
 				/* si le message n'est pas vide ou n'est pas égale a un espace */
-				if (!message.startsWith(" ") && !message.isEmpty()
-						&& !message.startsWith("/echo")
-						&& !message.startsWith("/ack")
-						&& !message.startsWith("/compute")) {
-					System.out.println("Connexion sur :"
-							+ socket.getInetAddress());
-					System.out.println("Chaîne reçue : " + message + "\n");
-					newMessage = "Message reçu de " + socket.getInetAddress()
-							+ " : " + message + "\n";
+				if (isStandardMessage(message)) {
+					newMessage = createNewMessage();
 					/* on répète le message sur tous les autres slaves */
 					if (master.activatedCommand() != null) {
 						if (master.activatedCommand().equals("echo")) {
 							System.out.println("La commande echo est activee");
+						} else if (master.activatedCommand().equals("ack")) {
+							System.out.println("La commande ack est activee");
+						} else if (master.activatedCommand().equals("compute")) {
+							System.out
+									.println("La commande compute est activee");
 						} else {
 							master.repeterMessage(newMessage, socket);
 						}
@@ -64,7 +62,7 @@ public class ServerSlaveTCP extends Thread {
 				} else {
 					String[] array = message.split(" ");
 					if (array.length < 2) {
-						System.out.println("tata");
+						output.println("command usage : /cmd [nb bits]");
 					} else {
 						String command = array[0];
 						int nb = Integer.parseInt(array[1]);
@@ -98,6 +96,21 @@ public class ServerSlaveTCP extends Thread {
 				e1.printStackTrace();
 			}
 		}
+	}
+
+	private String createNewMessage() {
+		String newMessage;
+		System.out.println("Connexion sur :" + socket.getInetAddress());
+		System.out.println("Chaîne reçue : " + message + "\n");
+		newMessage = "Message reçu de " + socket.getInetAddress() + " : "
+				+ message + "\n";
+		return newMessage;
+	}
+
+	private boolean isStandardMessage(String message) {
+		return !message.startsWith(" ") && !message.isEmpty()
+				&& !message.startsWith("/echo") && !message.startsWith("/ack")
+				&& !message.startsWith("/compute");
 	}
 
 	public Socket getSocket() {
