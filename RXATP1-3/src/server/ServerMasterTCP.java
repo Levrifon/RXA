@@ -61,7 +61,9 @@ public class ServerMasterTCP {
 		this.echoCommand = false;
 		this.ackCommand = false;
 		this.cmptCommand = false;
-		if(cmd.equals("")) {return;}
+		if (cmd.equals("")) {
+			return;
+		}
 		currentCommand = cmd;
 		switch (cmd) {
 		case "echo":
@@ -75,6 +77,8 @@ public class ServerMasterTCP {
 		case "compute":
 			this.cmptCommand = true;
 			System.out.println("Coucou compute");
+			break;
+		case "none":
 			break;
 		default:
 			break;
@@ -98,15 +102,59 @@ public class ServerMasterTCP {
 		return currentCommand;
 	}
 
-	public void echo(Socket source, String message) throws IOException {
+	public void echo(Socket source, String message, int nbOctets)
+			throws IOException {
 		PrintWriter print;
 		for (Socket slave : liste_sockets) {
-			if (!slave.equals(source)) {
+			if (slave.equals(source)) {
 				print = new PrintWriter(slave.getOutputStream(), true);
+				if (message.length() < nbOctets) {
+					print.println(message);
+				}
+				message = message.substring(0, nbOctets);
 				print.println(message);
 				System.out
 						.println("Taille en message :" + liste_sockets.size());
 			}
+		}
+	}
+
+	public void ack(Socket source, String message, int nbOctets)
+			throws IOException {
+		PrintWriter print;
+		for (Socket slave : liste_sockets) {
+			if (slave.equals(source)) {
+				print = new PrintWriter(slave.getOutputStream(), true);
+				if (message.length() == nbOctets) {
+					print.println("ok");
+				} else if (message.length() < nbOctets) {
+					if (message.length() == 0) {
+						print.println("nok");
+					} else {
+						print.println("nok something is missing");
+					}
+				}
+			}
+		}
+	}
+
+	public void compute(Socket source, int nb) throws IOException {
+		PrintWriter print = null;
+		int resultat = 0;
+		for (Socket slave : liste_sockets) {
+			if (slave.equals(source)) {
+				print = new PrintWriter(slave.getOutputStream(), true);
+				resultat = fib(nb);
+			}
+			print.println(resultat);
+		}
+	}
+
+	private int fib(int nb) {
+		if (nb < 2) {
+			return nb;
+		} else {
+			return fib(nb - 1) + fib(nb - 2);
 		}
 	}
 

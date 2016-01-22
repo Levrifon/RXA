@@ -38,24 +38,32 @@ public class ServerSlaveTCP extends Thread {
 	@Override
 	public void run() {
 		String newMessage;
+		int nbOctets = 0;
 		try {
 			output.println("Hello world !");
 			message = "";
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye")) {
-				/* si le message n'est pas vide ou n'est pas égale a un espace */
+				/*
+				 * si le message n'est pas vide ou n'est pas égale a un espace
+				 * ni a une commande
+				 */
 				if (isStandardMessage(message)) {
 					newMessage = createNewMessage();
-					/* on répète le message sur tous les autres slaves */
+					System.out.println(master.activatedCommand());
 					if (master.activatedCommand() != null) {
 						if (master.activatedCommand().equals("echo")) {
-							System.out.println("La commande echo est activee");
+							master.echo(socket, newMessage,nbOctets);
+							master.toggleCommand("none");
+							System.out.println("echo command activated");
 						} else if (master.activatedCommand().equals("ack")) {
-							System.out.println("La commande ack est activee");
+							System.out.println("ack command activated");
+							master.ack(socket, newMessage,nbOctets);
 						} else if (master.activatedCommand().equals("compute")) {
-							System.out
-									.println("La commande compute est activee");
+							System.out.println("compute command activated");
+							master.compute(socket, nbOctets);
 						} else {
+							/* on répète le message sur tous les autres slaves */
 							master.repeterMessage(newMessage, socket);
 						}
 					}
@@ -65,7 +73,12 @@ public class ServerSlaveTCP extends Thread {
 						output.println("command usage : /cmd [nb bits]");
 					} else {
 						String command = array[0];
-						int nb = Integer.parseInt(array[1]);
+						try {
+							nbOctets = Integer.parseInt(array[1]);
+						} catch (NumberFormatException e) {
+							output.println("expected Integer but was String");
+							nbOctets = 10;
+						}
 						switch (command) {
 						case "/echo":
 							master.toggleCommand("echo");
@@ -102,8 +115,7 @@ public class ServerSlaveTCP extends Thread {
 		String newMessage;
 		System.out.println("Connexion sur :" + socket.getInetAddress());
 		System.out.println("Chaîne reçue : " + message + "\n");
-		newMessage = "Message reçu de " + socket.getInetAddress() + " : "
-				+ message + "\n";
+		newMessage = message;
 		return newMessage;
 	}
 
