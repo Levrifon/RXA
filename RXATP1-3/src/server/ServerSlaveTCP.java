@@ -39,6 +39,8 @@ public class ServerSlaveTCP extends Thread {
 	public void run() {
 		String newMessage;
 		int nbOctets = 0;
+		long startexecTime = 0;
+		long finishexecTime = 0;
 		try {
 			output.println("Hello world !");
 			message = "";
@@ -53,7 +55,10 @@ public class ServerSlaveTCP extends Thread {
 					System.out.println(master.activatedCommand());
 					if (master.activatedCommand() != null) {
 						if (master.activatedCommand().equals("echo")) {
+							startexecTime = System.currentTimeMillis();
 							master.echo(socket, newMessage,nbOctets);
+							finishexecTime = System.currentTimeMillis();
+							System.out.println("ecart :" + (finishexecTime - startexecTime) + " ms");
 							master.toggleCommand("none");
 							System.out.println("echo command activated");
 						} else if (master.activatedCommand().equals("ack")) {
@@ -61,7 +66,10 @@ public class ServerSlaveTCP extends Thread {
 							master.ack(socket, newMessage,nbOctets);
 						} else if (master.activatedCommand().equals("compute")) {
 							System.out.println("compute command activated");
+							startexecTime = System.currentTimeMillis();
 							master.compute(socket, nbOctets);
+							finishexecTime = System.currentTimeMillis();
+							System.out.println("ecart :" + (finishexecTime - startexecTime) + " ms");
 						} else {
 							/* on répète le message sur tous les autres slaves */
 							master.repeterMessage(newMessage, socket);
@@ -93,7 +101,6 @@ public class ServerSlaveTCP extends Thread {
 					}
 				}
 			}
-			System.out.println("toto");
 			message = socket.getInetAddress() + "," + socket.getPort()
 					+ " is leaving";
 			master.removeSlave(this);

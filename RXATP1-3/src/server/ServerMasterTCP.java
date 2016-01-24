@@ -24,6 +24,7 @@ public class ServerMasterTCP {
 	public ServerMasterTCP(int port) {
 		try {
 			this.socket = new ServerSocket(port);
+			System.out.println("Socket : " + this.socket);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -110,11 +111,10 @@ public class ServerMasterTCP {
 				print = new PrintWriter(slave.getOutputStream(), true);
 				if (message.length() < nbOctets) {
 					print.println(message);
+				} else {
+					message = message.substring(0, nbOctets);
+					print.println(message);
 				}
-				message = message.substring(0, nbOctets);
-				print.println(message);
-				System.out
-						.println("Taille en message :" + liste_sockets.size());
 			}
 		}
 	}
@@ -193,4 +193,7 @@ public class ServerMasterTCP {
 		}
 	}
 
+	public ServerSocket getSocket() {
+		return this.socket;
+	}
 }
