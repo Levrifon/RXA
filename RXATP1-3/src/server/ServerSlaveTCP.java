@@ -118,6 +118,10 @@ public class ServerSlaveTCP extends Thread {
 		}
 	}
 
+	/**
+	 * Renvoie simplement le message original 
+	 * @return newMessage 
+	 */
 	private String createNewMessage() {
 		String newMessage;
 		System.out.println("Connexion sur :" + socket.getInetAddress());
@@ -125,7 +129,11 @@ public class ServerSlaveTCP extends Thread {
 		newMessage = message;
 		return newMessage;
 	}
-
+	/**
+	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)
+	 * @param message
+	 * @return isStandardMessage
+	 */
 	private boolean isStandardMessage(String message) {
 		return !message.startsWith(" ") && !message.isEmpty()
 				&& !message.startsWith("/echo") && !message.startsWith("/ack")

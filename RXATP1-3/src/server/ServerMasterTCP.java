@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import client.ClientTCP;
+
 public class ServerMasterTCP {
 	private ServerSocket socket;
 	private Socket ecoute;
@@ -57,6 +59,21 @@ public class ServerMasterTCP {
 			slave.start();
 		}
 	}
+	/**
+	 * Necessary for the Part 3 of the TP
+	 * @throws IOException 
+	 */
+	public void handleClientsConnections() throws IOException {
+		System.out.println("Starting handle connections from client ...");
+		ClientTCP client;
+		Socket sck;
+		while(true) {
+			sck = socket.accept();
+			client = new ClientTCP(ecoute);
+			client.start();
+		}
+		
+	}
 
 	public void toggleCommand(String cmd) {
 		this.echoCommand = false;
@@ -69,15 +86,12 @@ public class ServerMasterTCP {
 		switch (cmd) {
 		case "echo":
 			this.echoCommand = true;
-			System.out.println("Coucou echo");
 			break;
 		case "ack":
 			this.ackCommand = true;
-			System.out.println("Coucou ack");
 			break;
 		case "compute":
 			this.cmptCommand = true;
-			System.out.println("Coucou compute");
 			break;
 		case "none":
 			break;
@@ -157,7 +171,7 @@ public class ServerMasterTCP {
 			return fib(nb - 1) + fib(nb - 2);
 		}
 	}
-
+	
 	/**
 	 * 
 	 * @param slave
