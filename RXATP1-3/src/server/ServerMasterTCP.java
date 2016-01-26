@@ -69,7 +69,7 @@ public class ServerMasterTCP {
 		Socket sck;
 		while(true) {
 			sck = socket.accept();
-			client = new ClientTCP(ecoute);
+			client = new ClientTCP(sck);
 			client.start();
 		}
 		

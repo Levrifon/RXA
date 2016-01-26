@@ -31,6 +31,10 @@ public class ClientTCP extends Thread {
 	private void sendEcho() {
 		output.println("/echo");
 	}
+	
+	private void sendACK() {
+		output.println("/ack");
+	}
 
 	public static void main(String[] args){
 		String cmd;
