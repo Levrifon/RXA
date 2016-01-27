@@ -10,9 +10,10 @@ public class ServerSlaveTCP extends Thread {
 	private Socket socket;
 	private BufferedReader input;
 	private PrintWriter output;
-	private String message;
+	private String message,currentCommand;
 	private ServerMasterTCP master;
-	private int nbOctetsrestant;
+	private int nbOctetsrestant,currentNboctets,nboctetsOrigin;
+	private boolean echoCommand,ackCommand,cmptCommand;
 
 	/**
 	 * 
@@ -36,13 +37,58 @@ public class ServerSlaveTCP extends Thread {
 					.println("Erreur lors de la création des entrées/sorties");
 		}
 	}
+	
+	public void toggleCommand(String cmd, int nbOctets) {
+		System.out.println("Entering in toggleCommand");
+		System.out.println("Your command is :"+ cmd);
+		this.currentNboctets = nbOctets;
+		if (currentNboctets <= 0) {
+			this.echoCommand = false;
+			this.ackCommand = false;
+			this.cmptCommand = false;
+			currentCommand = "none";
+		} else {
+			if (cmd.equals("")) {
+				return;
+			}
+			currentCommand = cmd;
+			if(cmd.equals("echo")) {
+				this.echoCommand = true;
+				this.nboctetsOrigin = nbOctets;
+			}else if (cmd.equals("ack")) {
+				this.ackCommand = true;
+				this.nboctetsOrigin = nbOctets;
+			}else if (cmd.equals("compute")) {
+				this.cmptCommand = true;
+				this.nboctetsOrigin = nbOctets;
+			} 
+		}
+	}
+	
+	public boolean isActivated(String cmd) {
+		if(cmd.equals("echo")) {
+			return echoCommand;
+		}else if (cmd.equals("ack")) {
+			return ackCommand;
+		}else if (cmd.equals("compute")) {
+			return cmptCommand;
+		}else {
+			return false;
+		}
+	}
+
+	public String activatedCommand() {
+		return currentCommand;
+	}
 
 	@Override
 	public void run() {
 		String newMessage;
+		String recu;
 		int nbOctets = 0;
 		try {
 			output.println("Hello world !");
+			
 			message = "";
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye")) {
@@ -51,22 +97,23 @@ public class ServerSlaveTCP extends Thread {
 				 * ni a une commande
 				 */
 				if (isStandardMessage(message)) {
+					if(message.equals("OK")) { this.toggleCommand("none", 0);}
 					newMessage = createNewMessage();
-					System.out.println(master.activatedCommand());
+					System.out.println(this.activatedCommand());
 					
-					if (master.activatedCommand() != null) {
+					if (this.activatedCommand() != null) {
 						
-						if (master.activatedCommand().equals("echo")) {
+						if (this.activatedCommand().equals("echo")) {
 							System.out.println("Commande activée : echo ");
 							master.echo(socket, newMessage);
 							/*master.toggleCommand("none", nbOctets);*/
 							System.out.println("echo command activated");
 							
-						} else if (master.activatedCommand().equals("ack")) {
+						} else if (this.activatedCommand().equals("ack")) {
 							System.out.println("ack command activated");
 							master.ack(socket, newMessage);
 							
-						} else if (master.activatedCommand().equals("compute")) {
+						} else if (this.activatedCommand().equals("compute")) {
 							System.out.println("compute command activated");
 							master.compute(socket,nbOctets);
 							
@@ -89,13 +136,13 @@ public class ServerSlaveTCP extends Thread {
 						}
 						switch (command) {
 						case "/echo":
-							master.toggleCommand("echo", nbOctets);
+							this.toggleCommand("echo", nbOctets);
 							break;
 						case "/ack":
-							master.toggleCommand("ack", nbOctets);
+							this.toggleCommand("ack", nbOctets);
 							break;
 						case "/compute":
-							master.toggleCommand("compute", nbOctets);
+							this.toggleCommand("compute", nbOctets);
 							break;
 						}
 					}

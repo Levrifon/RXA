@@ -59,53 +59,12 @@ public class ServerMasterTCP {
 		}
 	}
 
-	public void toggleCommand(String cmd, int nbOctets) {
-		System.out.println("Entering in toggleCommand");
-		System.out.println("Your command is :"+ cmd);
-		this.currentNboctets = nbOctets;
-		if (currentNboctets <= 0) {
-			this.echoCommand = false;
-			this.ackCommand = false;
-			this.cmptCommand = false;
-			currentCommand = "none";
-		} else {
-			if (cmd.equals("")) {
-				return;
-			}
-			currentCommand = cmd;
-			if(cmd.equals("echo")) {
-				this.echoCommand = true;
-				this.nboctetsOrigin = nbOctets;
-			}else if (cmd.equals("ack")) {
-				this.ackCommand = true;
-				this.nboctetsOrigin = nbOctets;
-			}else if (cmd.equals("compute")) {
-				this.cmptCommand = true;
-				this.nboctetsOrigin = nbOctets;
-			} 
-		}
-	}
-
-	public boolean isActivated(String cmd) {
-		if(cmd.equals("echo")) {
-			return echoCommand;
-		}else if (cmd.equals("ack")) {
-			return ackCommand;
-		}else if (cmd.equals("compute")) {
-			return cmptCommand;
-		}else {
-			return false;
-		}
-	}
-
-	public String activatedCommand() {
-		return currentCommand;
-	}
 
 	public void echo(Socket source, String message) throws IOException {
 		PrintWriter print;
 		String messagerecu;
 		int difference;
+		System.out.println("nb octets :" + currentNboctets);
 		if ((difference = currentNboctets - message.length()) > 0) {
 			this.currentNboctets = currentNboctets - message.length();
 		}
@@ -121,7 +80,6 @@ public class ServerMasterTCP {
 			messagerecu = message.substring(0, currentNboctets);
 			print.println(messagerecu);
 			print.println("OK");
-			toggleCommand("none", 0);
 		}
 	}
 
@@ -134,7 +92,7 @@ public class ServerMasterTCP {
 		print = new PrintWriter(source.getOutputStream(), true);
 		if (currentNboctets == 0) {
 			print.println("ok");
-			toggleCommand("none", 0);
+			/*toggleCommand("none", 0);*/
 		}
 	}
 
