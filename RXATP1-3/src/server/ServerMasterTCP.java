@@ -7,14 +7,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import client.ClientTCP;
-
 public class ServerMasterTCP {
 	private ServerSocket socket;
 	private Socket ecoute;
 	private List<Socket> liste_sockets;
 	private boolean echoCommand, ackCommand, cmptCommand;
-	private int nboctets;
+	private int currentNboctets, nboctetsOrigin;
 	private String currentCommand;
 
 	/**
@@ -40,6 +38,7 @@ public class ServerMasterTCP {
 		ackCommand = false;
 		cmptCommand = false;
 		currentCommand = null;
+		currentNboctets = 0;
 	}
 
 	/**
@@ -59,56 +58,42 @@ public class ServerMasterTCP {
 			slave.start();
 		}
 	}
-	/**
-	 * Necessary for the Part 3 of the TP
-	 * @throws IOException 
-	 */
-	public void handleClientsConnections() throws IOException {
-		System.out.println("Starting handle connections from client ...");
-		ClientTCP client;
-		Socket sck;
-		while(true) {
-			sck = socket.accept();
-			client = new ClientTCP(sck);
-			client.start();
-		}
-		
-	}
 
-	public void toggleCommand(String cmd) {
-		this.echoCommand = false;
-		this.ackCommand = false;
-		this.cmptCommand = false;
-		if (cmd.equals("")) {
-			return;
-		}
-		currentCommand = cmd;
-		switch (cmd) {
-		case "echo":
-			this.echoCommand = true;
-			break;
-		case "ack":
-			this.ackCommand = true;
-			break;
-		case "compute":
-			this.cmptCommand = true;
-			break;
-		case "none":
-			break;
-		default:
-			break;
+	public void toggleCommand(String cmd, int nbOctets) {
+		System.out.println("Entering in toggleCommand");
+		System.out.println("Your command is :"+ cmd);
+		this.currentNboctets = nbOctets;
+		if (currentNboctets <= 0) {
+			this.echoCommand = false;
+			this.ackCommand = false;
+			this.cmptCommand = false;
+			currentCommand = "none";
+		} else {
+			if (cmd.equals("")) {
+				return;
+			}
+			currentCommand = cmd;
+			if(cmd.equals("echo")) {
+				this.echoCommand = true;
+				this.nboctetsOrigin = nbOctets;
+			}else if (cmd.equals("ack")) {
+				this.ackCommand = true;
+				this.nboctetsOrigin = nbOctets;
+			}else if (cmd.equals("compute")) {
+				this.cmptCommand = true;
+				this.nboctetsOrigin = nbOctets;
+			} 
 		}
 	}
 
 	public boolean isActivated(String cmd) {
-		switch (cmd) {
-		case "echo":
+		if(cmd.equals("echo")) {
 			return echoCommand;
-		case "ack":
+		}else if (cmd.equals("ack")) {
 			return ackCommand;
-		case "compute":
+		}else if (cmd.equals("compute")) {
 			return cmptCommand;
-		default:
+		}else {
 			return false;
 		}
 	}
@@ -117,51 +102,48 @@ public class ServerMasterTCP {
 		return currentCommand;
 	}
 
-	public void echo(Socket source, String message, int nbOctets)
-			throws IOException {
+	public void echo(Socket source, String message) throws IOException {
 		PrintWriter print;
-		for (Socket slave : liste_sockets) {
-			if (slave.equals(source)) {
-				print = new PrintWriter(slave.getOutputStream(), true);
-				if (message.length() < nbOctets) {
-					print.println(message);
-				} else {
-					message = message.substring(0, nbOctets);
-					print.println(message);
-				}
-			}
+		String messagerecu;
+		int difference;
+		if ((difference = currentNboctets - message.length()) > 0) {
+			this.currentNboctets = currentNboctets - message.length();
+		}
+		print = new PrintWriter(source.getOutputStream(), true);
+
+		if (difference > 0) {
+			print.println(message);
+		} else {
+			/*
+			 * recupere le bout restant de la chaine si le dernier message est
+			 * trop grand
+			 */
+			messagerecu = message.substring(0, currentNboctets);
+			print.println(messagerecu);
+			print.println("OK");
+			toggleCommand("none", 0);
 		}
 	}
 
-	public void ack(Socket source, String message, int nbOctets)
-			throws IOException {
+	public void ack(Socket source, String message) throws IOException {
 		PrintWriter print;
-		for (Socket slave : liste_sockets) {
-			if (slave.equals(source)) {
-				print = new PrintWriter(slave.getOutputStream(), true);
-				if (message.length() == nbOctets) {
-					print.println("ok");
-				} else if (message.length() < nbOctets) {
-					if (message.length() == 0) {
-						print.println("nok");
-					} else {
-						print.println("nok something is missing");
-					}
-				}
-			}
+		this.currentNboctets = currentNboctets - message.length();
+		if (currentNboctets < 0) {
+			currentNboctets = 0;
+		}
+		print = new PrintWriter(source.getOutputStream(), true);
+		if (currentNboctets == 0) {
+			print.println("ok");
+			toggleCommand("none", 0);
 		}
 	}
 
 	public void compute(Socket source, int nb) throws IOException {
 		PrintWriter print = null;
 		int resultat = 0;
-		for (Socket slave : liste_sockets) {
-			if (slave.equals(source)) {
-				print = new PrintWriter(slave.getOutputStream(), true);
-				resultat = fib(nb);
-			}
-			print.println(resultat);
-		}
+		print = new PrintWriter(source.getOutputStream(), true);
+		resultat = fib(nb);
+		print.println(resultat);
 	}
 
 	private int fib(int nb) {
@@ -171,7 +153,7 @@ public class ServerMasterTCP {
 			return fib(nb - 1) + fib(nb - 2);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param slave
@@ -189,9 +171,7 @@ public class ServerMasterTCP {
 	 * parcourant la liste_sockets
 	 * 
 	 * @param message
-	 *            a recopier
 	 * @param source
-	 *            de l'emmeteur
 	 * @throws IOException
 	 */
 	public synchronized void repeterMessage(String message, Socket source)
@@ -201,8 +181,6 @@ public class ServerMasterTCP {
 			if (!slave.equals(source)) {
 				print = new PrintWriter(slave.getOutputStream(), true);
 				print.println(message);
-				System.out
-						.println("Taille en message :" + liste_sockets.size());
 			}
 		}
 	}

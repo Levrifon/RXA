@@ -12,6 +12,7 @@ public class ServerSlaveTCP extends Thread {
 	private PrintWriter output;
 	private String message;
 	private ServerMasterTCP master;
+	private int nbOctetsrestant;
 
 	/**
 	 * 
@@ -23,11 +24,12 @@ public class ServerSlaveTCP extends Thread {
 	public ServerSlaveTCP(Socket socketFromMaster, ServerMasterTCP server) {
 		this.socket = socketFromMaster;
 		this.master = server;
+		this.nbOctetsrestant = 0;
 		try {
 			/* initialisation des entrées sorties */
 			input = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
-			output = new PrintWriter(socketFromMaster.getOutputStream(), true);
+			output = new PrintWriter(socket.getOutputStream(), true);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err
@@ -39,8 +41,6 @@ public class ServerSlaveTCP extends Thread {
 	public void run() {
 		String newMessage;
 		int nbOctets = 0;
-		long startexecTime = 0;
-		long finishexecTime = 0;
 		try {
 			output.println("Hello world !");
 			message = "";
@@ -53,23 +53,23 @@ public class ServerSlaveTCP extends Thread {
 				if (isStandardMessage(message)) {
 					newMessage = createNewMessage();
 					System.out.println(master.activatedCommand());
+					
 					if (master.activatedCommand() != null) {
+						
 						if (master.activatedCommand().equals("echo")) {
-							startexecTime = System.currentTimeMillis();
-							master.echo(socket, newMessage,nbOctets);
-							finishexecTime = System.currentTimeMillis();
-							System.out.println("ecart :" + (finishexecTime - startexecTime) + " ms");
-							master.toggleCommand("none");
+							System.out.println("Commande activée : echo ");
+							master.echo(socket, newMessage);
+							/*master.toggleCommand("none", nbOctets);*/
 							System.out.println("echo command activated");
+							
 						} else if (master.activatedCommand().equals("ack")) {
 							System.out.println("ack command activated");
-							master.ack(socket, newMessage,nbOctets);
+							master.ack(socket, newMessage);
+							
 						} else if (master.activatedCommand().equals("compute")) {
 							System.out.println("compute command activated");
-							startexecTime = System.currentTimeMillis();
-							master.compute(socket, nbOctets);
-							finishexecTime = System.currentTimeMillis();
-							System.out.println("ecart :" + (finishexecTime - startexecTime) + " ms");
+							master.compute(socket,nbOctets);
+							
 						} else {
 							/* on répète le message sur tous les autres slaves */
 							master.repeterMessage(newMessage, socket);
@@ -89,13 +89,13 @@ public class ServerSlaveTCP extends Thread {
 						}
 						switch (command) {
 						case "/echo":
-							master.toggleCommand("echo");
+							master.toggleCommand("echo", nbOctets);
 							break;
 						case "/ack":
-							master.toggleCommand("ack");
+							master.toggleCommand("ack", nbOctets);
 							break;
 						case "/compute":
-							master.toggleCommand("compute");
+							master.toggleCommand("compute", nbOctets);
 							break;
 						}
 					}
