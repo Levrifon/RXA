@@ -174,7 +174,6 @@ public class ServerSlaveTCP extends Thread {
 	private String createNewMessage() {
 		String newMessage;
 		System.out.println("Connexion sur :" + socket.getInetAddress());
-		System.out.println("Chaîne reçue : " + message + "\n");
 		newMessage = message;
 		return newMessage;
 	}
@@ -184,7 +183,6 @@ public class ServerSlaveTCP extends Thread {
 		int difference;
 		if ((difference = currentNboctets - message.length()) > 0) {
 			this.currentNboctets = currentNboctets - message.length();
-			System.out.println("nb octets :" + currentNboctets);
 		}
 
 		if (difference > 0) {
