@@ -59,30 +59,6 @@ public class ServerMasterTCP {
 		}
 	}
 
-
-	public void echo(Socket source, String message) throws IOException {
-		PrintWriter print;
-		String messagerecu;
-		int difference;
-		System.out.println("nb octets :" + currentNboctets);
-		if ((difference = currentNboctets - message.length()) > 0) {
-			this.currentNboctets = currentNboctets - message.length();
-		}
-		print = new PrintWriter(source.getOutputStream(), true);
-
-		if (difference > 0) {
-			print.println(message);
-		} else {
-			/*
-			 * recupere le bout restant de la chaine si le dernier message est
-			 * trop grand
-			 */
-			messagerecu = message.substring(0, currentNboctets);
-			print.println(messagerecu);
-			print.println("OK");
-		}
-	}
-
 	public void ack(Socket source, String message) throws IOException {
 		PrintWriter print;
 		this.currentNboctets = currentNboctets - message.length();

@@ -12,7 +12,7 @@ public class ServerSlaveTCP extends Thread {
 	private PrintWriter output;
 	private String message,currentCommand;
 	private ServerMasterTCP master;
-	private int nbOctetsrestant,currentNboctets,nboctetsOrigin;
+	private int currentNboctets;
 	private boolean echoCommand,ackCommand,cmptCommand;
 
 	/**
@@ -25,7 +25,6 @@ public class ServerSlaveTCP extends Thread {
 	public ServerSlaveTCP(Socket socketFromMaster, ServerMasterTCP server) {
 		this.socket = socketFromMaster;
 		this.master = server;
-		this.nbOctetsrestant = 0;
 		try {
 			/* initialisation des entrées sorties */
 			input = new BufferedReader(new InputStreamReader(
@@ -54,14 +53,13 @@ public class ServerSlaveTCP extends Thread {
 			currentCommand = cmd;
 			if(cmd.equals("echo")) {
 				this.echoCommand = true;
-				this.nboctetsOrigin = nbOctets;
 			}else if (cmd.equals("ack")) {
 				this.ackCommand = true;
-				this.nboctetsOrigin = nbOctets;
 			}else if (cmd.equals("compute")) {
 				this.cmptCommand = true;
-				this.nboctetsOrigin = nbOctets;
-			} 
+			}else {
+				System.out.println("WTF");
+			}
 		}
 	}
 	
@@ -104,8 +102,8 @@ public class ServerSlaveTCP extends Thread {
 					if (this.activatedCommand() != null) {
 						
 						if (this.activatedCommand().equals("echo")) {
-							System.out.println("Commande activée : echo ");
-							master.echo(socket, newMessage);
+							//this.toggleCommand("echo", 25);
+							echo(socket, newMessage,currentNboctets);
 							/*master.toggleCommand("none", nbOctets);*/
 							System.out.println("echo command activated");
 							
@@ -136,12 +134,15 @@ public class ServerSlaveTCP extends Thread {
 						}
 						switch (command) {
 						case "/echo":
+							this.currentNboctets = nbOctets;
 							this.toggleCommand("echo", nbOctets);
 							break;
 						case "/ack":
+							this.currentNboctets = nbOctets;
 							this.toggleCommand("ack", nbOctets);
 							break;
 						case "/compute":
+							this.currentNboctets = nbOctets;
 							this.toggleCommand("compute", nbOctets);
 							break;
 						}
@@ -175,6 +176,27 @@ public class ServerSlaveTCP extends Thread {
 		System.out.println("Chaîne reçue : " + message + "\n");
 		newMessage = message;
 		return newMessage;
+	}
+	
+	public void echo(Socket source, String message, int nbOctets) throws IOException {
+		String messagerecu;
+		int difference;
+		if ((difference = currentNboctets - message.length()) > 0) {
+			this.currentNboctets = currentNboctets - message.length();
+			System.out.println("nb octets :" + currentNboctets);
+		}
+
+		if (difference > 0) {
+			output.println(message);
+		} else {
+			/*
+			 * recupere le bout restant de la chaine si le dernier message est
+			 * trop grand
+			 */
+			messagerecu = message.substring(0, currentNboctets);
+			output.println(messagerecu);
+			output.println("OK");
+		}
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)
