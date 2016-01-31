@@ -44,7 +44,7 @@ public class ServerMasterTCP {
 	/**
 	 * Permet de lancer les slaves dans des threads séparés
 	 * 
-	 * @throws IOException
+	 * @throws IOException-
 	 */
 	public void handleConnections() throws IOException {
 		System.out.println("Starting handle connections method ...");
@@ -111,6 +111,7 @@ public class ServerMasterTCP {
 	public synchronized void repeterMessage(String message, Socket source)
 			throws IOException {
 		PrintWriter print;
+		System.out.println(liste_sockets.size());
 		for (Socket slave : liste_sockets) {
 			if (!slave.equals(source)) {
 				print = new PrintWriter(slave.getOutputStream(), true);

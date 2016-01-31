@@ -97,7 +97,6 @@ public class ServerSlaveTCP extends Thread {
 				if (isStandardMessage(message)) {
 					if(message.equals("OK")) { this.toggleCommand("none", 0);}
 					newMessage = createNewMessage();
-					System.out.println(this.activatedCommand());
 					
 					if (this.activatedCommand() != null) {
 						
@@ -105,20 +104,22 @@ public class ServerSlaveTCP extends Thread {
 							//this.toggleCommand("echo", 25);
 							echo(socket, newMessage,currentNboctets);
 							/*master.toggleCommand("none", nbOctets);*/
-							System.out.println("echo command activated");
+							//System.out.println("echo command activated");
 							
 						} else if (this.activatedCommand().equals("ack")) {
-							System.out.println("ack command activated");
+							//System.out.println("ack command activated");
 							master.ack(socket, newMessage);
 							
 						} else if (this.activatedCommand().equals("compute")) {
-							System.out.println("compute command activated");
+							//System.out.println("compute command activated");
 							master.compute(socket,nbOctets);
 							
 						} else {
 							/* on répète le message sur tous les autres slaves */
 							master.repeterMessage(newMessage, socket);
 						}
+					} else {
+						master.repeterMessage(newMessage, socket);
 					}
 				} else {
 					String[] array = message.split(" ");
@@ -194,6 +195,7 @@ public class ServerSlaveTCP extends Thread {
 			 * trop grand
 			 */
 			messagerecu = message.substring(0, currentNboctets);
+			currentNboctets = 0;
 			output.println(messagerecu);
 			output.println("OK");
 		}
