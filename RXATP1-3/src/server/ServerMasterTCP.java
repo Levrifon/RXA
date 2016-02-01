@@ -6,14 +6,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * 
+ * @author remy
+ * ServerMasterTCP relègue le travail aux ServerSlaveTCP il ne fait que accepter, fermer les connections.
+ */
 public class ServerMasterTCP {
 	private ServerSocket socket;
 	private Socket ecoute;
 	private List<Socket> liste_sockets;
-	private boolean echoCommand, ackCommand, cmptCommand;
-	private int currentNboctets, nboctetsOrigin;
-	private String currentCommand;
+	PrintWriter print;
 
 	/**
 	 * Constructeur du Master possedant une liste de sockets
@@ -34,11 +36,6 @@ public class ServerMasterTCP {
 			System.out.println("Succesful bind on port: " + port);
 		}
 		liste_sockets = new ArrayList<Socket>();
-		echoCommand = false;
-		ackCommand = false;
-		cmptCommand = false;
-		currentCommand = null;
-		currentNboctets = 0;
 	}
 
 	/**
@@ -59,34 +56,8 @@ public class ServerMasterTCP {
 		}
 	}
 
-	public void ack(Socket source, String message) throws IOException {
-		PrintWriter print;
-		this.currentNboctets = currentNboctets - message.length();
-		if (currentNboctets < 0) {
-			currentNboctets = 0;
-		}
-		print = new PrintWriter(source.getOutputStream(), true);
-		if (currentNboctets == 0) {
-			print.println("ok");
-			/*toggleCommand("none", 0);*/
-		}
-	}
 
-	public void compute(Socket source, int nb) throws IOException {
-		PrintWriter print = null;
-		int resultat = 0;
-		print = new PrintWriter(source.getOutputStream(), true);
-		resultat = fib(nb);
-		print.println(resultat);
-	}
 
-	private int fib(int nb) {
-		if (nb < 2) {
-			return nb;
-		} else {
-			return fib(nb - 1) + fib(nb - 2);
-		}
-	}
 
 	/**
 	 * 
@@ -110,8 +81,7 @@ public class ServerMasterTCP {
 	 */
 	public synchronized void repeterMessage(String message, Socket source)
 			throws IOException {
-		PrintWriter print;
-		System.out.println(liste_sockets.size());
+
 		for (Socket slave : liste_sockets) {
 			if (!slave.equals(source)) {
 				print = new PrintWriter(slave.getOutputStream(), true);

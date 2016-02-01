@@ -38,16 +38,11 @@ public class ServerSlaveTCP extends Thread {
 	}
 	
 	public void toggleCommand(String cmd, int nbOctets) {
-		System.out.println("Entering in toggleCommand");
-		System.out.println("Your command is :"+ cmd);
 		this.currentNboctets = nbOctets;
 		if (currentNboctets <= 0) {
-			this.echoCommand = false;
-			this.ackCommand = false;
-			this.cmptCommand = false;
-			currentCommand = "none";
+			sendEndOfTransmission();
 		} else {
-			if (cmd.equals("")) {
+			if (cmd.isEmpty()) {
 				return;
 			}
 			currentCommand = cmd;
@@ -82,7 +77,6 @@ public class ServerSlaveTCP extends Thread {
 	@Override
 	public void run() {
 		String newMessage;
-		String recu;
 		int nbOctets = 0;
 		try {
 			output.println("Hello world !");
@@ -95,24 +89,18 @@ public class ServerSlaveTCP extends Thread {
 				 * ni a une commande
 				 */
 				if (isStandardMessage(message)) {
-					if(message.equals("OK")) { this.toggleCommand("none", 0);}
+					if(message.equals("OK")) { sendEndOfTransmission();}
 					newMessage = createNewMessage();
 					
 					if (this.activatedCommand() != null) {
 						
 						if (this.activatedCommand().equals("echo")) {
-							//this.toggleCommand("echo", 25);
-							echo(socket, newMessage,currentNboctets);
-							/*master.toggleCommand("none", nbOctets);*/
-							//System.out.println("echo command activated");
-							
+							echo(socket, newMessage);
 						} else if (this.activatedCommand().equals("ack")) {
-							//System.out.println("ack command activated");
-							master.ack(socket, newMessage);
-							
+							ack(socket, newMessage);
 						} else if (this.activatedCommand().equals("compute")) {
 							//System.out.println("compute command activated");
-							master.compute(socket,nbOctets);
+							compute(socket,nbOctets);
 							
 						} else {
 							/* on répète le message sur tous les autres slaves */
@@ -173,12 +161,11 @@ public class ServerSlaveTCP extends Thread {
 	 */
 	private String createNewMessage() {
 		String newMessage;
-		System.out.println("Connexion sur :" + socket.getInetAddress());
 		newMessage = message;
 		return newMessage;
 	}
 	
-	public void echo(Socket source, String message, int nbOctets) throws IOException {
+	public void echo(Socket source, String message) throws IOException {
 		String messagerecu;
 		int difference;
 		if ((difference = currentNboctets - message.length()) > 0) {
@@ -193,10 +180,42 @@ public class ServerSlaveTCP extends Thread {
 			 * trop grand
 			 */
 			messagerecu = message.substring(0, currentNboctets);
-			currentNboctets = 0;
 			output.println(messagerecu);
-			output.println("OK");
+			sendEndOfTransmission();
 		}
+	}
+	
+	public void compute(Socket source, int nb) throws IOException {
+		int resultat = 0;
+		resultat = fib(nb);
+		output.println(resultat);
+		sendEndOfTransmission();
+	}
+
+	private int fib(int nb) {
+		if (nb < 2) {
+			return nb;
+		} else {
+			return fib(nb - 1) + fib(nb - 2);
+		}
+	}
+	public void ack(Socket source, String message) throws IOException {
+		this.currentNboctets = currentNboctets - message.length();
+		if (currentNboctets < 0) {
+			currentNboctets = 0;
+		}
+		if (currentNboctets == 0) {
+			sendEndOfTransmission();
+		}
+	}
+	
+	private void sendEndOfTransmission(){
+		currentNboctets = 0;
+		this.echoCommand = false;
+		this.ackCommand = false;
+		this.cmptCommand = false;
+		currentCommand = "none";
+		output.println("OK");
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)
