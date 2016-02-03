@@ -63,6 +63,18 @@ public class ClientTCP extends Thread {
 
 		return 0;
 	}
+	public Socket getSocket() {
+		return this.socket;
+	}
+	
+	private void getIncommingMessage() throws IOException {
+		String message;
+		message = input.readLine();
+		while(message != null) {
+			System.out.println(message);
+			message = input.readLine();
+		}
+	}
 
 	public static void main(String[] args) {
 		String cmd;
@@ -111,6 +123,7 @@ public class ClientTCP extends Thread {
 					System.out.println(String.format(
 							"Sent %d kbytes in %d so : %dkB/s", size, endTime
 									- startTime, debit));
+					client.getIncommingMessage();
 				} catch (UnknownHostException e) {
 					System.err
 							.println(String
