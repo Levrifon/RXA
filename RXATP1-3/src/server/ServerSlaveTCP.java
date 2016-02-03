@@ -110,6 +110,7 @@ public class ServerSlaveTCP extends Thread {
 						master.repeterMessage(newMessage, socket);
 					}
 				} else {
+					System.out.println("Here I am !");
 					String[] array = message.split(" ");
 					if (array.length < 2) {
 						output.println("command usage : /cmd [nb bits]");
@@ -123,6 +124,7 @@ public class ServerSlaveTCP extends Thread {
 						}
 						switch (command) {
 						case "/echo":
+							System.out.println("entering toggle echo ");
 							this.currentNboctets = nbOctets;
 							this.toggleCommand("echo", nbOctets);
 							break;
@@ -168,6 +170,7 @@ public class ServerSlaveTCP extends Thread {
 	public void echo(Socket source, String message) throws IOException {
 		String messagerecu;
 		int difference;
+		System.out.println("message reçu : " + message);
 		if ((difference = currentNboctets - message.length()) > 0) {
 			this.currentNboctets = currentNboctets - message.length();
 		}

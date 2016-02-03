@@ -36,11 +36,11 @@ public class ClientTCP extends Thread {
 		System.out.println("Transmitting ack");
 		output.println("/ack " + size);
 	}
-	
+
 	private void sendMessage(String currMessage) {
 		output.println(currMessage);
 		System.out.println("Message sent");
-		
+
 	}
 
 	private int checkCommand(String command, int size) {
@@ -51,7 +51,7 @@ public class ClientTCP extends Thread {
 			/* remove the slash */
 			command = command.substring(1, command.length() - 1);
 		}
-		if(command.equals("echo")) {
+		if (command.equals("echo")) {
 			sendEcho(size);
 		} else if (command.equals("ack")) {
 			sendACK(size);
@@ -60,6 +60,7 @@ public class ClientTCP extends Thread {
 		} else {
 			return -1;
 		}
+
 		return 0;
 	}
 
@@ -69,8 +70,11 @@ public class ClientTCP extends Thread {
 		Scanner sc = new Scanner(System.in);
 		cmd = sc.nextLine();
 		List<String> messages = new ArrayList<String>();
-		messages.add("Toto");messages.add("Titi");messages.add("Tutu");messages.add("Tata");
-		long startTime,endTime;
+		messages.add("Toto");
+		messages.add("Titi");
+		messages.add("Tutu");
+		messages.add("Tata");
+		long startTime, endTime;
 		if (!cmd.equals(null)) {
 			String[] arguments = cmd.split(" ");
 			System.out.println(arguments.length);
@@ -83,26 +87,30 @@ public class ClientTCP extends Thread {
 			if (arguments.length == 4) {
 				@SuppressWarnings("unused")
 				String name, command;
-				int size,result;
+				int size, result;
 				String ip;
 				name = arguments[0];
 				command = arguments[1];
-				
+
 				size = Integer.parseInt(arguments[2]);
 				ip = arguments[3];
 				try {
 					Socket socket = new Socket(ip, 8080);
 					ClientTCP client = new ClientTCP(socket);
-					result = client.checkCommand(command,size);
+					result = client.checkCommand(command, size);
 					startTime = System.currentTimeMillis();
-					for(String currMessage : messages) {
+					for (String currMessage : messages) {
 						client.sendMessage(currMessage);
 					}
 					endTime = System.currentTimeMillis();
 					long difference = endTime - startTime;
-					if(difference == 0) { difference = 1;}
-					long debit = size/((difference));
-					System.out.println(String.format("Sent %d kbytes in %d so : %dkB/s",size,endTime-startTime,debit));
+					if (difference == 0) {
+						difference = 1;
+					}
+					long debit = size / ((difference));
+					System.out.println(String.format(
+							"Sent %d kbytes in %d so : %dkB/s", size, endTime
+									- startTime, debit));
 				} catch (UnknownHostException e) {
 					System.err
 							.println(String
@@ -116,7 +124,5 @@ public class ClientTCP extends Thread {
 		}
 
 	}
-
-
 
 }
