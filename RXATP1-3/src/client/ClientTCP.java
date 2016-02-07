@@ -12,7 +12,6 @@ import java.util.Scanner;
 
 public class ClientTCP extends Thread {
 	private Socket socket;
-	@SuppressWarnings("unused")
 	private BufferedReader input;
 	private PrintWriter output;
 

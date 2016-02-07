@@ -99,9 +99,7 @@ public class ServerSlaveTCP extends Thread {
 						} else if (this.activatedCommand().equals("ack")) {
 							ack(socket, newMessage);
 						} else if (this.activatedCommand().equals("compute")) {
-							//System.out.println("compute command activated");
 							compute(socket,nbOctets);
-							
 						} else {
 							/* on répète le message sur tous les autres slaves */
 							master.repeterMessage(newMessage, socket);
@@ -109,8 +107,8 @@ public class ServerSlaveTCP extends Thread {
 					} else {
 						master.repeterMessage(newMessage, socket);
 					}
+					/* si on envoie une commande */
 				} else {
-					System.out.println("Here I am !");
 					String[] array = message.split(" ");
 					if (array.length < 2) {
 						output.println("command usage : /cmd [nb bits]");
@@ -124,7 +122,6 @@ public class ServerSlaveTCP extends Thread {
 						}
 						switch (command) {
 						case "/echo":
-							System.out.println("entering toggle echo ");
 							this.currentNboctets = nbOctets;
 							this.toggleCommand("echo", nbOctets);
 							break;
