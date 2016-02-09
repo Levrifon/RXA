@@ -26,20 +26,34 @@ public class ClientTCP extends Thread {
 		}
 	}
 
+	/**
+	 * Envoie la commande echo au serveur via le socket
+	 * @param size in octet
+	 */
 	private void sendEcho(int size) {
 		System.out.println("Transmitting echo");
 		output.println("/echo " + size);
 	}
-
+	/**
+	 * Envoie la commande ack au serveur via le socket
+	 * @param size in octet
+	 */
+	 
 	private void sendACK(int size) {
 		System.out.println("Transmitting ack");
 		output.println("/ack " + size);
 	}
 
+	private void sendCompute(int size) {
+		System.out.println("Transmitting compute");
+		output.println("/compute " + size);
+	}
+	/**
+	 * Envoie le message actuel au serveur via le socket
+	 * @param currMessage to send
+	 */
 	private void sendMessage(String currMessage) {
 		output.println(currMessage);
-		System.out.println("Message sent");
-
 	}
 
 	private int checkCommand(String command, int size) {
@@ -55,13 +69,14 @@ public class ClientTCP extends Thread {
 		} else if (command.equals("ack")) {
 			sendACK(size);
 		} else if (command.equals("compute")) {
-			/* a faire */
+			sendCompute(size);
 		} else {
 			return -1;
 		}
 
 		return 0;
 	}
+
 	public Socket getSocket() {
 		return this.socket;
 	}
@@ -81,10 +96,12 @@ public class ClientTCP extends Thread {
 		Scanner sc = new Scanner(System.in);
 		cmd = sc.nextLine();
 		List<String> messages = new ArrayList<String>();
-		messages.add("Toto");
-		messages.add("Titi");
-		messages.add("Tutu");
-		messages.add("Tata");
+		for(int i = 0 ; i < 2000 ; i ++) {
+			messages.add("Toto");
+			messages.add("Titi");
+			messages.add("Tutu");
+			messages.add("Tata");
+		}
 		long startTime, endTime;
 		if (!cmd.equals(null)) {
 			String[] arguments = cmd.split(" ");
@@ -115,7 +132,7 @@ public class ClientTCP extends Thread {
 					}
 					endTime = System.currentTimeMillis();
 					long difference = endTime - startTime;
-					if (difference == 0) {
+					if (difference == 0) { /* evite la division par zero lors du calcul de perfs */
 						difference = 1;
 					}
 					long debit = size / ((difference));
@@ -134,7 +151,5 @@ public class ClientTCP extends Thread {
 				}
 			}
 		}
-
 	}
-
 }
