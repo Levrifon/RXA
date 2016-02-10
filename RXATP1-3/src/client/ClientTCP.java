@@ -129,7 +129,7 @@ public class ClientTCP extends Thread {
 						StringBuffer messagetoSend = new StringBuffer(sizeofmessage);
 						Random rdm = new Random();
 						
-						for(int i = 0 ; i < number+j ; i++) {
+						for(int i = 0 ; i < j ; i++) {
 							rdm = new Random();
 							c = (char)(rdm.nextInt(26) + 'a');
 							messagetoSend.append(c);
@@ -149,8 +149,8 @@ public class ClientTCP extends Thread {
 						float debit = (number*sizeofmessage /difference)/976;
 						System.out.println(String.format(
 								"Sent %d bytes in %f so : %fMB/s", number*sizeofmessage, difference, debit));
-						myfile.write("" +number*sizeofmessage);
-						myfile.write("\t");
+						myfile.write("" +j);
+						myfile.write(" ");
 						myfile.write("" + debit);
 						myfile.write('\n');
 					}
