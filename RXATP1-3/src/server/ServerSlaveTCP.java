@@ -167,7 +167,6 @@ public class ServerSlaveTCP extends Thread {
 	public void echo(Socket source, String message) throws IOException {
 		String messagerecu;
 		int difference;
-		System.out.println("message reçu : " + message);
 		if ((difference = currentNboctets - message.length()) > 0) {
 			this.currentNboctets = currentNboctets - message.length();
 		}
@@ -216,6 +215,8 @@ public class ServerSlaveTCP extends Thread {
 		this.cmptCommand = false;
 		currentCommand = "none";
 		output.println("OK");
+		System.out.println("MAIS LA J'MARRETE");
+		this.interrupt();
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)

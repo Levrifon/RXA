@@ -46,13 +46,15 @@ public class ServerMasterTCP {
 	public void handleConnections() throws IOException {
 		System.out.println("Starting handle connections method ...");
 		ServerSlaveTCP slave;
+		int nbconnect = 0;
 		while (true) {
 			ecoute = socket.accept();
 			liste_sockets.add(ecoute);
 			slave = new ServerSlaveTCP(ecoute, this);
 			System.out.println("New connection from " + ecoute.getInetAddress()
-					+ "," + ecoute.getPort());
+					+ "," + ecoute.getPort() + "nb : " + nbconnect);
 			slave.start();
+			nbconnect++;
 		}
 	}
 

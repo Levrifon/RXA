@@ -1,0 +1,15 @@
+=>Lien direct avec Wireshark (débit observé, débit réel, débit de la carte, pourquoi est-ce différent ? Pourquoi des changements selon le nombre de paquets envoyés)
+
+=>Tester avec un switch (tester le fond de panier) , tester avec un hub.
+
+----------------------------------------------------------------
+NB OCTETS	TAILLEMESSAGE		TEMPS S		DEBIT MB
+----------------------------------------------------------------
+1000000		10			0.487		21.03
+500		10000			0.041		124.95
+100000 		2			1.067		1.92
+debit = octets / ms
+debit = 
+
+
+calculer le débit en fonction de la taille du buffer

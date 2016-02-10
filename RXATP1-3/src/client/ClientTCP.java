@@ -1,13 +1,17 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 public class ClientTCP extends Thread {
@@ -80,66 +84,76 @@ public class ClientTCP extends Thread {
 	public Socket getSocket() {
 		return this.socket;
 	}
-	
-	private void getIncommingMessage() throws IOException {
-		String message;
-		message = input.readLine();
-		while(message != null) {
-			System.out.println(message);
-			message = input.readLine();
-		}
-	}
 
 	public static void main(String[] args) {
+		System.out.println("./testtcp [cmd] [number] [sizeofmessage] [IPAddress]");
+		PrintWriter myfile = null;
+		try {
+			myfile = new PrintWriter("mygraph.csv","UTF-8");
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 		String cmd;
+		int sizeofmessage;
+		char c;
 		@SuppressWarnings("resource")
 		Scanner sc = new Scanner(System.in);
 		cmd = sc.nextLine();
 		List<String> messages = new ArrayList<String>();
-		for(int i = 0 ; i < 2000 ; i ++) {
-			messages.add("Toto");
-			messages.add("Titi");
-			messages.add("Tutu");
-			messages.add("Tata");
-		}
 		long startTime, endTime;
 		if (!cmd.equals(null)) {
 			String[] arguments = cmd.split(" ");
-			System.out.println(arguments.length);
-			while (arguments.length < 4) {
+			while (arguments.length < 5) {
 				System.err
-						.println("Wrong number of arguments : ./testtcp [cmd] [size] [IPAddress]");
+						.println("Wrong number of arguments : ./testtcp [cmd] [number] [sizeofmessage] [IPAddress]");
 				cmd = sc.nextLine();
 				arguments = cmd.split(" ");
 			}
-			if (arguments.length == 4) {
+			if (arguments.length == 5) {
 				@SuppressWarnings("unused")
 				String name, command;
-				int size, result;
+				int number, result;
 				String ip;
 				name = arguments[0];
 				command = arguments[1];
-
-				size = Integer.parseInt(arguments[2]);
-				ip = arguments[3];
+				number = Integer.parseInt(arguments[2]);
+				sizeofmessage = 1;
+				ip = arguments[4];
 				try {
-					Socket socket = new Socket(ip, 8080);
-					ClientTCP client = new ClientTCP(socket);
-					result = client.checkCommand(command, size);
-					startTime = System.currentTimeMillis();
-					for (String currMessage : messages) {
-						client.sendMessage(currMessage);
+					for(int j = 1 ; j < number ;  j++) {
+						Socket socket = new Socket(ip, 8080);
+						ClientTCP client = new ClientTCP(socket);
+						result = client.checkCommand(command, number*sizeofmessage);
+						StringBuffer messagetoSend = new StringBuffer(sizeofmessage);
+						Random rdm = new Random();
+						
+						for(int i = 0 ; i < number+j ; i++) {
+							rdm = new Random();
+							c = (char)(rdm.nextInt(26) + 'a');
+							messagetoSend.append(c);
+						}
+						startTime = System.currentTimeMillis();
+						client.sendMessage(messagetoSend.toString());
+						endTime = System.currentTimeMillis();
+						
+						/* conversion en secondes */
+						float difference = (endTime - startTime);
+						
+						System.out.println("Time exec : " + difference + "ms");
+						
+						if (difference == 0) { /* evite la division par zero lors du calcul de perfs */
+							difference = 1;
+						}
+						float debit = (number*sizeofmessage /difference)/976;
+						System.out.println(String.format(
+								"Sent %d bytes in %f so : %fMB/s", number*sizeofmessage, difference, debit));
+						myfile.write("" +number*sizeofmessage);
+						myfile.write("\t");
+						myfile.write("" + debit);
+						myfile.write('\n');
 					}
-					endTime = System.currentTimeMillis();
-					long difference = endTime - startTime;
-					if (difference == 0) { /* evite la division par zero lors du calcul de perfs */
-						difference = 1;
-					}
-					long debit = size / ((difference));
-					System.out.println(String.format(
-							"Sent %d kbytes in %d so : %dkB/s", size, endTime
-									- startTime, debit));
-					client.getIncommingMessage();
 				} catch (UnknownHostException e) {
 					System.err
 							.println(String
