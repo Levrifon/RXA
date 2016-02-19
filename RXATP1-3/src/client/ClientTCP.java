@@ -1,7 +1,6 @@
 package client;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,8 +8,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -58,6 +55,7 @@ public class ClientTCP extends Thread {
 	 */
 	private void sendMessage(String currMessage) {
 		output.println(currMessage);
+		output.flush();
 	}
 
 	private int checkCommand(String command, int size) {
@@ -87,22 +85,31 @@ public class ClientTCP extends Thread {
 
 	public static void main(String[] args) {
 		System.out.println("./testtcp [cmd] [number] [sizeofmessage] [IPAddress]");
+		/* init variable */
 		PrintWriter myfile = null;
+		StringBuffer messagetoSend;
+		String cmd;
+		int sizeofmessage;
+		char c;
+		Scanner sc = new Scanner(System.in);
+		long startTime, endTime;
+		String name, command;
+		int number, result;
+		String ip;
+		Socket socket;
+		ClientTCP client;
+		/* end init variable */
+		
 		try {
-			myfile = new PrintWriter("mygraph.csv","UTF-8");
+			myfile = new PrintWriter("mygraph2.csv","UTF-8");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
-		String cmd;
-		int sizeofmessage;
-		char c;
-		@SuppressWarnings("resource")
-		Scanner sc = new Scanner(System.in);
+
 		cmd = sc.nextLine();
-		List<String> messages = new ArrayList<String>();
-		long startTime, endTime;
+		//List<String> messages = new ArrayList<String>();
 		if (!cmd.equals(null)) {
 			String[] arguments = cmd.split(" ");
 			while (arguments.length < 5) {
@@ -112,30 +119,29 @@ public class ClientTCP extends Thread {
 				arguments = cmd.split(" ");
 			}
 			if (arguments.length == 5) {
-				@SuppressWarnings("unused")
-				String name, command;
-				int number, result;
-				String ip;
 				name = arguments[0];
 				command = arguments[1];
+				/* number of packet */
 				number = Integer.parseInt(arguments[2]);
 				sizeofmessage = 1;
 				ip = arguments[4];
+				Random rdm;
 				try {
+					 socket = new Socket(ip, 8080);
+					 client = new ClientTCP(socket);
 					for(int j = 1 ; j < number ;  j++) {
-						Socket socket = new Socket(ip, 8080);
-						ClientTCP client = new ClientTCP(socket);
+						/* check and send the command to the server */
 						result = client.checkCommand(command, number*sizeofmessage);
-						StringBuffer messagetoSend = new StringBuffer(sizeofmessage);
-						Random rdm = new Random();
+						messagetoSend = new StringBuffer(sizeofmessage);
 						
-						for(int i = 0 ; i < j ; i++) {
+						
+						startTime = System.currentTimeMillis();
+						for(int i = 0 ; i < sizeofmessage ; i++) {
 							rdm = new Random();
 							c = (char)(rdm.nextInt(26) + 'a');
 							messagetoSend.append(c);
+							client.sendMessage(messagetoSend.toString());
 						}
-						startTime = System.currentTimeMillis();
-						client.sendMessage(messagetoSend.toString());
 						endTime = System.currentTimeMillis();
 						
 						/* conversion en secondes */
@@ -149,10 +155,14 @@ public class ClientTCP extends Thread {
 						float debit = (number*sizeofmessage /difference)/976;
 						System.out.println(String.format(
 								"Sent %d bytes in %f so : %fMB/s", number*sizeofmessage, difference, debit));
-						myfile.write("" +j);
-						myfile.write(" ");
-						myfile.write("" + debit);
-						myfile.write('\n');
+						if(j%5 == 0) {
+							myfile.write("" +j);
+							myfile.write(" ");
+							myfile.write("" + debit);
+							myfile.write('\n');
+						}
+						
+						sizeofmessage++;
 					}
 				} catch (UnknownHostException e) {
 					System.err
@@ -163,6 +173,9 @@ public class ClientTCP extends Thread {
 					System.err
 							.println("La connection est refusée, le serveur tourne t'il ?");
 				}
+				myfile.flush();
+				myfile.close();
+				
 			}
 		}
 	}
