@@ -53,9 +53,11 @@ public class ClientTCP extends Thread {
 	 * Envoie le message actuel au serveur via le socket
 	 * @param currMessage to send
 	 */
-	private void sendMessage(String currMessage) {
-		output.println(currMessage);
-		output.flush();
+	private synchronized void sendMessage(String currMessage) {
+		synchronized (currMessage) {
+			output.println(currMessage);
+			output.flush();
+		}
 	}
 
 	private int checkCommand(String command, int size) {
@@ -92,7 +94,7 @@ public class ClientTCP extends Thread {
 		int sizeofmessage;
 		char c;
 		Scanner sc = new Scanner(System.in);
-		long startTime, endTime;
+		float startTime, endTime;
 		String name, command;
 		int number, result;
 		String ip;
@@ -129,14 +131,15 @@ public class ClientTCP extends Thread {
 				try {
 					 socket = new Socket(ip, 8080);
 					 client = new ClientTCP(socket);
-					for(int j = 1 ; j < number ;  j++) {
+					for(int j = 0 ; j < number ;  j++) {
 						/* check and send the command to the server */
-						result = client.checkCommand(command, number*sizeofmessage);
-						messagetoSend = new StringBuffer(sizeofmessage);
+						result = client.checkCommand(command, j + sizeofmessage);
+						messagetoSend = new StringBuffer(sizeofmessage+j);
 						
 						
 						startTime = System.currentTimeMillis();
-						for(int i = 0 ; i < sizeofmessage ; i++) {
+						for(int i = 0 ; i < sizeofmessage + j ; i++) {
+							System.out.println(sizeofmessage + j);
 							rdm = new Random();
 							c = (char)(rdm.nextInt(26) + 'a');
 							messagetoSend.append(c);
@@ -152,17 +155,15 @@ public class ClientTCP extends Thread {
 						if (difference == 0) { /* evite la division par zero lors du calcul de perfs */
 							difference = 1;
 						}
-						float debit = (number*sizeofmessage /difference)/976;
+						float debit = (sizeofmessage+j /difference)/976;
 						System.out.println(String.format(
-								"Sent %d bytes in %f so : %fMB/s", number*sizeofmessage, difference, debit));
+								"Sent %d bytes in %f so : %fMB/s",j+sizeofmessage, difference, debit));
 						if(j%5 == 0) {
 							myfile.write("" +j);
 							myfile.write(" ");
 							myfile.write("" + debit);
 							myfile.write('\n');
 						}
-						
-						sizeofmessage++;
 					}
 				} catch (UnknownHostException e) {
 					System.err
