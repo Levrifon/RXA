@@ -79,8 +79,6 @@ public class ServerSlaveTCP extends Thread {
 		String newMessage;
 		int nbOctets = 0;
 		try {
-			output.println("Hello world !");
-			
 			message = "";
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye")) {
