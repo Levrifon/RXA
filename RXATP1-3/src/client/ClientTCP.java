@@ -61,19 +61,9 @@ public class ClientTCP extends Thread {
 	 * @param currMessage
 	 *            to send
 	 */
-	private synchronized void sendMessage(String currMessage) {
-		synchronized (currMessage) {
-			output.println(currMessage);
-			output.flush();
-		}
-	}
-
-
-	
-	private String readNextLine() throws IOException {
-		String res = input.readLine();
-		System.out.println(res);
-		return res;
+	private  void sendMessage(String currMessage) {
+		output.println(currMessage);
+		output.flush();
 	}
 
 	private int checkCommand(String command, int size) {
@@ -101,6 +91,10 @@ public class ClientTCP extends Thread {
 		return this.socket;
 	}
 	
+	public BufferedReader getInput() {
+		return input;
+	}
+	
 	public void closeConnexion() throws IOException {
 		if (!socket.isClosed()) {
 			this.socket.close();
@@ -110,17 +104,18 @@ public class ClientTCP extends Thread {
 	public static void main(String[] args) throws UnknownHostException,
 			IOException {
 		System.out
-				.println("./testtcp [cmd] [number] [sizeofmessage] [IPAddress]");
+				.println("./testtcp [cmd] [number] [sizeofmessage] [IPAddress] [Port]");
 		/* init variable */
 		PrintWriter myfile = null;
 		String cmd;
 		int sizeofmessage;
 		char c;
 		Scanner sc = new Scanner(System.in);
-		double startTime = 0, endTime,difference;
+		long startTime = 0, endTime;
+		double difference;
 		String name, command;
 		int number, result;
-		String ip,message="";
+		String ip,message="",receivedFromServer;
 		Socket socket;
 		ClientTCP client;
 		/* end init variable */
@@ -136,37 +131,46 @@ public class ClientTCP extends Thread {
 		cmd = sc.nextLine();
 		if (!cmd.equals(null)) {
 			String[] arguments = cmd.split(" ");
-			while (arguments.length < 5) {
+			while (arguments.length < 6) {
 				System.err
-						.println("Wrong number of arguments : ./testtcp [cmd] [numbertoSend] [sizeofmessage] [IPAddress]");
+						.println("Wrong number of arguments : ./testtcp [cmd] [numbertoSend] [sizeofmessage] [IPAddress] [Port]");
 				cmd = sc.nextLine();
 				arguments = cmd.split(" ");
 			}
-			if (arguments.length == 5) {
+			if (arguments.length == 6) {
 				name = arguments[0];
 				command = arguments[1];
 				/* number of packet */
 				number = Integer.parseInt(arguments[2]);
 				sizeofmessage = 1;
 				ip = arguments[4];
-				socket = new Socket(ip, 8080);
+				int port = Integer.parseInt(arguments[5]);
+				/* on creer la connexion pour parler au serveur */
+				socket = new Socket(ip, port);
 				client = new ClientTCP(socket);
 				client.checkCommand(command, number);
 				Random rdm;
-				for (int i = 0; i < number; i++) {
+				/* on génére une chaine de caractère qu'on va envoyer number fois au serveur */
 					rdm = new Random();
-					c = (char) (rdm.nextInt('a') + 26);
-					message += c;
 					startTime = System.currentTimeMillis();
-					client.sendMessage(message);
-					while(!client.readNextLine().contains("OK")) {
-						System.out.println("waiting..");
+					System.out.println("Pierro le haricot");
+					/* tant que le serveur ne nous repond pas ok cad : tant qu'il n'a pas fini sa procédure echo */
+					c = (char) (rdm.nextInt(26) + 'a');
+					client.sendMessage(c + "");
+					receivedFromServer = client.getInput().readLine();
+					while(!receivedFromServer.contains("OK")) {
+						//System.out.println(receivedFromServer);
+						c = (char) (rdm.nextInt(26) + 'a');
+						client.sendMessage(""+ c);
+						receivedFromServer = client.getInput().readLine();
 					}
+					System.out.println("Received from server ? " + receivedFromServer);
 					endTime = System.currentTimeMillis();
 					difference = endTime - startTime;
 					System.out.println("Time taken :"  + difference);
-				}
-				//System.out.println("Sent " + number + " bytes in " + difference + " ms (" + (((number*1000)/difference)/(1024*1024)) + " MB/s)" );
+					System.out.println("Sent " + number + " bytes in " + difference + " ms (" + (((number*1000)/difference)/1048) + " MB/s)" );
+					client.sendMessage("bye");
+					client.getSocket().close();
 			}
 		}
 	}

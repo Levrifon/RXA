@@ -81,7 +81,7 @@ public class ServerSlaveTCP extends Thread {
 		try {
 			message = "";
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
-			while (!(message = input.readLine()).startsWith("bye")) {
+			while (!(message = input.readLine()).startsWith("bye") && !isInterrupted()) {
 				/*
 				 * si le message n'est pas vide ou n'est pas égale a un espace
 				 * ni a une commande
@@ -119,6 +119,7 @@ public class ServerSlaveTCP extends Thread {
 							nbOctets = 10;
 						}
 						switch (command) {
+						/* nbOctets corresponds au deuxieme parametre de la commande */
 						case "/echo":
 							this.currentNboctets = nbOctets;
 							this.toggleCommand("echo", nbOctets);
@@ -139,8 +140,8 @@ public class ServerSlaveTCP extends Thread {
 					+ " is leaving";
 			master.removeSlave(this);
 			master.repeterMessage(message, socket);
-			this.interrupt();
 			socket.close();
+			this.interrupt();
 			return;
 		} catch (IOException e) {
 			try {
@@ -213,12 +214,13 @@ public class ServerSlaveTCP extends Thread {
 		this.cmptCommand = false;
 		currentCommand = "none";
 		output.println("OK");
+		/*
 		try {
 			this.socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		master.removeSlave(this);
+		master.removeSlave(this);*/
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)
