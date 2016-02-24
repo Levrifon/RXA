@@ -213,8 +213,12 @@ public class ServerSlaveTCP extends Thread {
 		this.cmptCommand = false;
 		currentCommand = "none";
 		output.println("OK");
-		System.out.println("MAIS LA J'MARRETE");
-		this.interrupt();
+		try {
+			this.socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		master.removeSlave(this);
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)

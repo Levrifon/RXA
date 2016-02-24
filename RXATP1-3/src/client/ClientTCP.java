@@ -68,11 +68,12 @@ public class ClientTCP extends Thread {
 		}
 	}
 
-	private boolean hasFinished() throws IOException {
-		if (input.readLine() == null) {
-			return false;
-		}
-		return input.readLine().contains("OK");
+
+	
+	private String readNextLine() throws IOException {
+		String res = input.readLine();
+		System.out.println(res);
+		return res;
 	}
 
 	private int checkCommand(String command, int size) {
@@ -99,6 +100,12 @@ public class ClientTCP extends Thread {
 	public Socket getSocket() {
 		return this.socket;
 	}
+	
+	public void closeConnexion() throws IOException {
+		if (!socket.isClosed()) {
+			this.socket.close();
+		}
+	}
 
 	public static void main(String[] args) throws UnknownHostException,
 			IOException {
@@ -106,15 +113,14 @@ public class ClientTCP extends Thread {
 				.println("./testtcp [cmd] [number] [sizeofmessage] [IPAddress]");
 		/* init variable */
 		PrintWriter myfile = null;
-		StringBuffer messagetoSend;
 		String cmd;
 		int sizeofmessage;
 		char c;
 		Scanner sc = new Scanner(System.in);
-		double startTime = 0, endTime;
+		double startTime = 0, endTime,difference;
 		String name, command;
 		int number, result;
-		String ip;
+		String ip,message="";
 		Socket socket;
 		ClientTCP client;
 		/* end init variable */
@@ -147,10 +153,20 @@ public class ClientTCP extends Thread {
 				client = new ClientTCP(socket);
 				client.checkCommand(command, number);
 				Random rdm;
-				for(int i = 0 ; i < number ; i ++) {
+				for (int i = 0; i < number; i++) {
 					rdm = new Random();
-					c =(char)(rdm.nextInt('a') + 26);
+					c = (char) (rdm.nextInt('a') + 26);
+					message += c;
+					startTime = System.currentTimeMillis();
+					client.sendMessage(message);
+					while(!client.readNextLine().contains("OK")) {
+						System.out.println("waiting..");
+					}
+					endTime = System.currentTimeMillis();
+					difference = endTime - startTime;
+					System.out.println("Time taken :"  + difference);
 				}
+				//System.out.println("Sent " + number + " bytes in " + difference + " ms (" + (((number*1000)/difference)/(1024*1024)) + " MB/s)" );
 			}
 		}
 	}
