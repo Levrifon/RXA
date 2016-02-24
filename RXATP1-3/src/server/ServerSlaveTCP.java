@@ -136,10 +136,19 @@ public class ServerSlaveTCP extends Thread {
 					}
 				}
 			}
+			if(message.equals("bye")) {
+				message = socket.getInetAddress() + "," + socket.getPort()
+						+ " is leaving";
+				master.removeSlave(this);
+				socket.close();
+				this.interrupt();
+				return;
+				
+			}
 			message = socket.getInetAddress() + "," + socket.getPort()
 					+ " is leaving";
 			master.removeSlave(this);
-			master.repeterMessage(message, socket);
+		//	master.repeterMessage(message, socket);
 			socket.close();
 			this.interrupt();
 			return;
