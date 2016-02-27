@@ -14,6 +14,7 @@ public class ServerSlaveTCP extends Thread {
 	private ServerMasterTCP master;
 	private int currentNboctets;
 	private boolean echoCommand,ackCommand,cmptCommand;
+	private int nbTotalOctets;
 
 	/**
 	 * 
@@ -39,6 +40,7 @@ public class ServerSlaveTCP extends Thread {
 	
 	public void toggleCommand(String cmd, int nbOctets) {
 		this.currentNboctets = nbOctets;
+		this.nbTotalOctets = nbOctets;
 		if (currentNboctets <= 0) {
 			sendEndOfTransmission();
 		} else {
@@ -82,6 +84,7 @@ public class ServerSlaveTCP extends Thread {
 			message = "";
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye") && !isInterrupted()) {
+				System.out.println(message);
 				/*
 				 * si le message n'est pas vide ou n'est pas égale a un espace
 				 * ni a une commande

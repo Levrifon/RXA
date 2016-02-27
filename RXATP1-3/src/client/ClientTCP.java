@@ -144,41 +144,45 @@ public class ClientTCP extends Thread {
 				sizeofmessage = 1;
 				ip = arguments[4];
 				int port = Integer.parseInt(arguments[5]);
+				int cpt = 0;
 				/* on creer la connexion pour parler au serveur */
-				socket = new Socket(ip, port);
-				client = new ClientTCP(socket);
-				client.checkCommand(command, number);
-				message = "";
-				Random rdm;
-				/*
-				 * on génére une chaine de caractère qu'on va envoyer number
-				 * fois au serveur
-				 */
-				rdm = new Random();
-				startTime = System.currentTimeMillis();
-				/*
-				 * tant que le serveur ne nous repond pas ok cad : tant qu'il
-				 * n'a pas fini sa procédure echo
-				 */
-				c = (char) (rdm.nextInt(26) + 'a');
-				client.sendMessage(c + "");
-				receivedFromServer = client.getInput().readLine();
-				while (!receivedFromServer.contains("OK")) {
-					// System.out.println(receivedFromServer);
+				for(int i=1 ; i<=number ; i++){
+					socket = new Socket(ip, port);
+					client = new ClientTCP(socket);
+					cpt=0;
+					result=0;
+					message = "";
+					Random rdm;
+					rdm = new Random();
+					client.checkCommand(command, number);
+					/*
+					 * on génére une chaine de caractère qu'on va envoyer number
+					 * fois au serveur
+					 */
+					startTime = System.currentTimeMillis();
+					/*
+					 * tant que le serveur ne nous repond pas ok cad : tant qu'il
+					 * n'a pas fini sa procédure echo
+					 */
 					c = (char) (rdm.nextInt(26) + 'a');
-					message += c;
-					client.sendMessage(message);
-					result += message.length();
+					client.sendMessage(c + "");
 					receivedFromServer = client.getInput().readLine();
+					while (!receivedFromServer.contains("OK")) {
+						while(cpt < i) {
+							c = (char) (rdm.nextInt(26) + 'a');
+							message+=c;
+							cpt++;
+						}
+						client.sendMessage(message);
+						receivedFromServer = client.getInput().readLine();
+					}
+					endTime = System.currentTimeMillis();
+					difference = (endTime - startTime);
+					System.out.println("Sent " + number + " bytes in " + difference
+							+ " ms (" + ((number*1000/ difference)/(1024*1024))	+ " MB/s (" + i + " par " + i +"))");
+					client.sendMessage("bye");
+					client.getSocket().close();
 				}
-
-				endTime = System.currentTimeMillis();
-				difference = endTime - startTime;
-				System.out.println("Sent " + result + " bytes in " + difference
-						+ " ms (" + (((result * 1000) / difference) / 1048576)
-						+ " MB/s)");
-				client.sendMessage("bye");
-				client.getSocket().close();
 			}
 		}
 	}
