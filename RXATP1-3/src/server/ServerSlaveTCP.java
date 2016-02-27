@@ -84,15 +84,12 @@ public class ServerSlaveTCP extends Thread {
 			message = "";
 			/* tant que la personne veut écrire et n'envoie pas "bye" */
 			while (!(message = input.readLine()).startsWith("bye") && !isInterrupted()) {
-				System.out.println(message);
 				/*
 				 * si le message n'est pas vide ou n'est pas égale a un espace
 				 * ni a une commande
 				 */
 				if (isStandardMessage(message)) {
-					if(message.equals("OK")) { sendEndOfTransmission();}
 					newMessage = createNewMessage();
-					
 					if (this.activatedCommand() != null) {
 						
 						if (this.activatedCommand().equals("echo")) {
@@ -103,6 +100,7 @@ public class ServerSlaveTCP extends Thread {
 							compute(socket,nbOctets);
 						} else {
 							/* on répète le message sur tous les autres slaves */
+							System.out.println("WTF : " + this.activatedCommand());
 							master.repeterMessage(newMessage, socket);
 						}
 					} else {
@@ -190,7 +188,7 @@ public class ServerSlaveTCP extends Thread {
 			 * trop grand
 			 */
 			messagerecu = message.substring(0, currentNboctets);
-			output.println(messagerecu);
+			//output.println(messagerecu);
 			sendEndOfTransmission();
 		}
 	}
@@ -226,13 +224,16 @@ public class ServerSlaveTCP extends Thread {
 		this.cmptCommand = false;
 		currentCommand = "none";
 		output.println("OK");
-		/*
 		try {
 			this.socket.close();
+			output.close();
+			input.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		master.removeSlave(this);*/
+		master.removeSlave(this);
+		this.interrupt();
+		
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)

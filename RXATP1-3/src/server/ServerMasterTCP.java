@@ -51,8 +51,6 @@ public class ServerMasterTCP {
 			ecoute = socket.accept();
 			liste_sockets.add(ecoute);
 			slave = new ServerSlaveTCP(ecoute, this);
-			System.out.println("New connection from " + ecoute.getInetAddress()
-					+ "," + ecoute.getPort() + "nb : " + nbconnect);
 			slave.start();
 			nbconnect++;
 		}
