@@ -178,9 +178,6 @@ public class ServerSlaveTCP extends Thread {
 		int difference;
 		if ((difference = currentNboctets - message.length()) > 0) {
 			this.currentNboctets = currentNboctets - message.length();
-		}
-
-		if (difference > 0) {
 			output.println(message);
 		} else {
 			/*
@@ -188,7 +185,7 @@ public class ServerSlaveTCP extends Thread {
 			 * trop grand
 			 */
 			messagerecu = message.substring(0, currentNboctets);
-			//output.println(messagerecu);
+			// output.println(messagerecu);
 			sendEndOfTransmission();
 		}
 	}
@@ -224,6 +221,9 @@ public class ServerSlaveTCP extends Thread {
 		this.cmptCommand = false;
 		currentCommand = "none";
 		output.println("OK");
+	}
+	
+	private void closeEveryThings() {
 		try {
 			this.socket.close();
 			output.close();
@@ -233,7 +233,6 @@ public class ServerSlaveTCP extends Thread {
 		}
 		master.removeSlave(this);
 		this.interrupt();
-		
 	}
 	/**
 	 * Renvoie vrai si le message est un message normal (non vide ou pas de commandes)

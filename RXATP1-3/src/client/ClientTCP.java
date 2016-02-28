@@ -103,24 +103,25 @@ public class ClientTCP extends Thread {
 	public static void main(String[] args) throws UnknownHostException,
 			IOException {
 		System.out
-				.println("./testtcp [cmd] [number] [sizeofmessage] [IPAddress] [Port]");
+				.println("./testtcp [cmd] [number] [pas] [IPAddress] [Port]");
 		/* init variable */
 		PrintWriter myfile = null;
 		String cmd;
-		int sizeofmessage;
+		int pas;
 		char c;
 		Scanner sc = new Scanner(System.in);
 		long startTime = 0, endTime;
 		double difference;
-		String name, command;
-		int number, result = 0;
-		String ip,message="",receivedFromServer;
+		String command;
+		int number;
+		String ip,receivedFromServer;
+		StringBuilder message;
 		Socket socket;
 		ClientTCP client;
 		/* end init variable */
 
 		try {
-			myfile = new PrintWriter("mygraph2.csv", "UTF-8");
+			myfile = new PrintWriter("mygraphEchoSameConnection.csv", "UTF-8");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (UnsupportedEncodingException e1) {
@@ -132,32 +133,32 @@ public class ClientTCP extends Thread {
 			String[] arguments = cmd.split(" ");
 			while (arguments.length < 6) {
 				System.err
-						.println("Wrong number of arguments : ./testtcp [cmd] [numbertoSend] [sizeofmessage] [IPAddress] [Port]");
+						.println("Wrong number of arguments : ./testtcp [cmd] [numbertoSend] [pas] [IPAddress] [Port]");
 				cmd = sc.nextLine();
 				arguments = cmd.split(" ");
 			}
 			if (arguments.length == 6) {
-				name = arguments[0];
+				sc.close();
 				command = arguments[1];
 				/* number of packet */
 				number = Integer.parseInt(arguments[2]);
-				sizeofmessage = 1;
+				pas = Integer.parseInt(arguments[3]);
 				ip = arguments[4];
 				int port = Integer.parseInt(arguments[5]);
 				int cpt = 0;
-				int compteur = 0;
+				//int compteur = 0;
+				double debit;
 				/* on creer la connexion pour parler au serveur */
 					cpt=0;
-					result=0;
-					message = "";
+					message = new StringBuilder();
 					Random rdm;
 					rdm = new Random();
-					for(int i = 1 ; i <= number ; i ++) {
-						cpt=0;
-						compteur = 0;
-						socket = new Socket(ip, port);
-						client = new ClientTCP(socket);
+					socket = new Socket(ip, port);
+					client = new ClientTCP(socket);
+					for(int i = 1 ; i <= number ; i +=pas) {
 						client.checkCommand(command, number);
+						cpt=0;
+						//compteur = 0;
 						/*
 						 * on génére une chaine de caractère qu'on va envoyer number
 						 * fois au serveur
@@ -168,28 +169,36 @@ public class ClientTCP extends Thread {
 						 */
 						c = (char) (rdm.nextInt(26) + 'a');
 						startTime = System.currentTimeMillis();
-						client.sendMessage(c + "");
+						message.append(c);
+						client.sendMessage(message.toString());
 						receivedFromServer = client.getInput().readLine();
 						while (!receivedFromServer.contains("OK")) {
 							while(cpt < i) {
 								c = (char) (rdm.nextInt(26) + 'a');
-								message +=c;
+								message.append(c);
 								cpt++;
 							}
-							client.sendMessage(message);
-							compteur++;
+							System.out.println("length : " + message.toString().length());
+							client.sendMessage(message.toString());
+							//compteur++;
 							receivedFromServer = client.getInput().readLine();
 						}
-						message="";
-						System.out.println("J'ai envoyé " + compteur +  "fois des messages de " + cpt + " taille");
+						message=new StringBuilder();
+						//System.out.println("J'ai envoyé " + compteur +  "fois des messages de " + cpt + " taille");
 						endTime = System.currentTimeMillis();
 						difference = (endTime - startTime);
-						System.out.println("Sent " + number + " bytes in " + difference
-								+ " ms (" + ((number*1000/ difference)/(1024*1024))	+ " MB/s )");
-						client.sendMessage("bye");
+						debit = ((number*1000/ difference)/(1024*1024));
+						/*client.sendMessage("bye");
 						client.getSocket().close();
-						socket.close();
+						socket.close();*/
+						myfile.write(Integer.toString(i));
+						myfile.write('\t');
+						myfile.write(Double.toString(debit));
+						myfile.write('\n');
 					}
+					myfile.close();
+					client.sendMessage("bye");
+					System.out.println("Travail terminé !");
 			}
 		}
 	}
