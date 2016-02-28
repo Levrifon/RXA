@@ -206,6 +206,7 @@ public class ServerSlaveTCP extends Thread {
 	}
 	public void ack(Socket source, String message) throws IOException {
 		this.currentNboctets = currentNboctets - message.length();
+		System.out.println(currentNboctets);
 		if (currentNboctets < 0) {
 			currentNboctets = 0;
 		}

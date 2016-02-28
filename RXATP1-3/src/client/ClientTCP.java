@@ -45,7 +45,6 @@ public class ClientTCP extends Thread {
 	 */
 
 	private void sendACK(int size) {
-		System.out.println("Transmitting ack");
 		output.println("/ack " + size);
 	}
 
@@ -121,7 +120,7 @@ public class ClientTCP extends Thread {
 		/* end init variable */
 
 		try {
-			myfile = new PrintWriter("mygraphEchoSameConnection.csv", "UTF-8");
+			myfile = new PrintWriter("mygraphACKDifferentConnection.csv", "UTF-8");
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (UnsupportedEncodingException e1) {
@@ -145,7 +144,7 @@ public class ClientTCP extends Thread {
 				pas = Integer.parseInt(arguments[3]);
 				ip = arguments[4];
 				int port = Integer.parseInt(arguments[5]);
-				int cpt = 0;
+				int cpt = 0,compteur = 0;
 				//int compteur = 0;
 				double debit;
 				/* on creer la connexion pour parler au serveur */
@@ -153,9 +152,9 @@ public class ClientTCP extends Thread {
 					message = new StringBuilder();
 					Random rdm;
 					rdm = new Random();
-					socket = new Socket(ip, port);
-					client = new ClientTCP(socket);
 					for(int i = 1 ; i <= number ; i +=pas) {
+						socket = new Socket(ip, port);
+						client = new ClientTCP(socket);
 						client.checkCommand(command, number);
 						cpt=0;
 						//compteur = 0;
@@ -169,20 +168,22 @@ public class ClientTCP extends Thread {
 						 */
 						c = (char) (rdm.nextInt(26) + 'a');
 						startTime = System.currentTimeMillis();
-						message.append(c);
-						client.sendMessage(message.toString());
-						receivedFromServer = client.getInput().readLine();
-						while (!receivedFromServer.contains("OK")) {
+						//message.append(c);
+					//	client.sendMessage(message.toString());
+						receivedFromServer = "";
+						//while (compteur*message.toString().length() < number) {
 							while(cpt < i) {
 								c = (char) (rdm.nextInt(26) + 'a');
 								message.append(c);
 								cpt++;
 							}
-							System.out.println("length : " + message.toString().length());
 							client.sendMessage(message.toString());
 							//compteur++;
-							receivedFromServer = client.getInput().readLine();
-						}
+							/*receivedFromServer = client.getInput().readLine();
+							System.out.println("Je recois : " + receivedFromServer);*/
+							//compteur++;
+						//}
+						compteur=0;
 						message=new StringBuilder();
 						//System.out.println("J'ai envoyé " + compteur +  "fois des messages de " + cpt + " taille");
 						endTime = System.currentTimeMillis();
@@ -195,9 +196,14 @@ public class ClientTCP extends Thread {
 						myfile.write('\t');
 						myfile.write(Double.toString(debit));
 						myfile.write('\n');
+						if(((i*100)/number)%25 == 0) {
+							System.out.println(((i*100)/number) + "%");
+						}
+						client.sendMessage("bye");
+						client.getSocket().close();
+						socket.close();
 					}
 					myfile.close();
-					client.sendMessage("bye");
 					System.out.println("Travail terminé !");
 			}
 		}
