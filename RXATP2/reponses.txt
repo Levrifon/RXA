@@ -49,10 +49,16 @@ service timestamps debug datetime msec
 service timestamps log datetime msec                                           
 no service password-encryption
 
+4 Structure matérielle 
+----------------------
+
 Pour la commande show flash on peut apercevoir l'image de l'IOS :
 34136568  c2800nm-spservicesk9-mz.124-25a  
 
+
 Pour nvram on obtient :
+-----------------------
+
 Directory of nvram:/
 
   238  -rw-         660                    <no date>  startup-config
@@ -64,12 +70,60 @@ Directory of nvram:/
 245752 bytes total (242987 bytes free)
 
 La version de IOS est : 
+-----------------------
+
 Cisco IOS Software, 2800 Software (C2800NM-SPSERVICESK9-M), Version 12.4(25a), RELEASE SOFTWARE (fc2)
 Technical Support: http://www.cisco.com/techsupport
 Copyright (c) 1986-2009 by Cisco Systems, Inc.
 Compiled Fri 22-May-09 22:00 by prod_rel_team
 
 ROM: System Bootstrap, Version 12.4(13r)T11, RELEASE SOFTWARE (fc1)
+
+
+--- Mettre un password sur minicom ---
+(config)#enable secret <password>
+(config)#line con 0 (configure la ligne zero)
+(config-line)#password <password>
+(config-line)#login
+(config-line)#exit
+(config)#line vty 0 15
+(config-line)#password <password>
+(config-line)#login
+(config-line)#end
+
+--- CONFIGURER l'IP du ROUTEUR ----
+configure terminal (rentre en mode config)
+interface GigabitEthernet 0/1.1 (configure le routeur)
+ip address 10.1.1.1 255.255.255.0 (ajoute cette IP sur le routeur)
+
+--- CONFIGURER ENSUITE ETH SUR LE PC ----
+sudo ifconfig <eth> <IP> netmask 255.255.255.0
+
+
+---- Pour TELNET
+line vty 0 15
+login 
+password <password>
+(limité au mode user sauf si mdp configuré)
+
+--- Pour SSH
+line vty 0 15 (mode configuration connexion virtuelle)
+login local (il faut configurer username [login] secret [mdp])
+transport input ssh (active ssh)
+
+
+--- Voir les interfaces connectées sur l'ordinateur
+sudo mii-tool
+
+
+5 Gestion distante
+------------------
+
+Le problème de base avec telnet lors de l'authentification est que le mot de passe apparaît en clair dans les trames .. il va donc falloir trouver un moyen de chiffrer cet envoi.
+
+
+
+
 
      
 
