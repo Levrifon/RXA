@@ -1,0 +1,75 @@
+Rémy DEBUE
+
+Configuration d'équipements réseau
+__________________________________
+
+
+2 Connexion aux équipements :
+-----------------------------
+
+Voici le resultat en regardant les paramètres de minicom :
+
+		      +---[Paramètres de communication]----+              
+		      |	    Actuellement :  9600 8N1       |              
+                      | Speed            Parity      Data  |              
+		      | A: <next>        L: None     S: 5  |        
+                      | B: <prev>        M: Even     T: 6  |              
+                      | C:   9600        N: Odd      U: 7  |              
+                      | D:  38400        O: Mark     V: 8  |              
+                      | E: 115200        P: Space          |              
+                      |                                    |              
+                      | Stopbits                           |              
+                      | W: 1             Q: 8-N-1          |              
+                      | X: 2             R: 7-E-1          |              
+                      |                                    |              
+                      |                                    |              
+                      | Choix, ou <Entrée> pour sortir ?   |              
+                      +------------------------------------+  
+
+3 Modes de configuration
+------------------------
+Le ">" correspond au mode user et le "#" correspond au mode privileged
+
+RJ2>en
+RJ2#disable 
+RJ2>en
+
+Lorsque l'on passe en mode config on obtient : 
+RJ2#configure terminal                                                         
+Enter configuration commands, one per line.  End with CNTL/Z.  
+
+En mode privilégié on peut écrire "show running-config" :
+RJ2#show running-config                                                        
+Building configuration...                                                      
+                                                                               
+Current configuration : 720 bytes                                              
+!                                                                              
+version 12.4                                                                   
+service timestamps debug datetime msec                                         
+service timestamps log datetime msec                                           
+no service password-encryption
+
+Pour la commande show flash on peut apercevoir l'image de l'IOS :
+34136568  c2800nm-spservicesk9-mz.124-25a  
+
+Pour nvram on obtient :
+Directory of nvram:/
+
+  238  -rw-         660                    <no date>  startup-config
+  239  ----           5                    <no date>  private-config
+  240  -rw-         660                    <no date>  underlying-config
+    1  -rw-           0                    <no date>  ifIndex-table
+    2  ----          34                    <no date>  persistent-data
+
+245752 bytes total (242987 bytes free)
+
+La version de IOS est : 
+Cisco IOS Software, 2800 Software (C2800NM-SPSERVICESK9-M), Version 12.4(25a), RELEASE SOFTWARE (fc2)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2009 by Cisco Systems, Inc.
+Compiled Fri 22-May-09 22:00 by prod_rel_team
+
+ROM: System Bootstrap, Version 12.4(13r)T11, RELEASE SOFTWARE (fc1)
+
+     
+
