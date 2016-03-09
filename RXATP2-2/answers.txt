@@ -1,0 +1,39 @@
+TP2 LAN
+Remy DEBUE
+
+1 Commutation (MAC => Port)
+-------------
+Switch(config)#no spanning-tree vlan 1 (desactive le protocole spanningtree)
+
+1) 
+	show mac-address-table (affiche la table de commutation)
+	Le ping continue de passer quand on change de port
+	L'adresse n'est plus dans la table de routage mais le ping reussit quand même
+
+2) 
+
+	3	1.855759000	10.1.2.3	10.1.2.95	ICMP	98	Echo (ping) request  id=0x6d36, seq=1/256, ttl=64 (no response found!)
+	4	1.855985000	10.1.2.95	10.1.2.3	ICMP	98	Echo (ping) reply    id=0x6d36, seq=1/256, ttl=64 (request in 3)
+
+	arp -s <nomhote> <hw_addr> (configure manuellement une adresse)
+	Le ping ne répond même pas et lors de la capture de trame on ne reçois pas de retour sauf de temps en temps un message du protocole LOOP du routeur
+	Le routeur agit comme un hub et renvoie le message à tous.
+
+3)
+	Configuration de la durée de retention : 
+	Syntax
+	#(config): mac-address-table aging-time <seconds>
+	Celui qui possède la table va lancer un ping en diffusant sur tous les ports pour récupérer les adresses de tout le monde pour ensuite re-remplir sa table de routage.
+	Ce phénomène ne se reproduit pas car les adresses continuent d'être utilisées pendant l'interval de dix secondes.
+	Si on définit un intervalle trop court, la machine qui voulait envoyer un message sera diffusé sur tous les ports.
+	Si on définit un intervalle trop long on aurait une table beaucoup trop grandes, avec des adresses qui ne sont plus utilisées et qui prendrait de la place pour rien.
+
+4 et 5)
+	Une même adresse MAC ne peut pas avoir plusieurs ports mais l'inverse si !
+	On considère dans ce cas que la machine a changée de port
+
+
+2 Sécurisation des ports
+------------------------
+mac-address-table <port security> <switchport port-security>
+
