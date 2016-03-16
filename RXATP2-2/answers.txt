@@ -86,8 +86,17 @@ Peut être que les switchs essayent de chercher à l'infini entre eux cette @MAC
 On peut afficher le nombre de (paquets/s) avec Statistics > Summary sur Wireshark
 Si on applique le filtre de storm control  (port storm-control broadcast threshold rising <nb> falling <nb2> cela ne suffit pas, il faut en bloquer au moins deux sur les 4 pour que cela réussise.
 
-stormcontrol avec forwarding : 
-Désactiver le storm control : no storm-control
+Désactiver le storm control : no port storm-control [broadcast | multicast | unicast]
 
 4 Bridge Linux
 --------------
+sudo brctl addbr <name>
+brctl show :
+	bridge name	bridge id		STP enabled	interfaces
+	toto		8000.000000000000	no
+sudo brctl addif <name> <interface>
+	bridge name	bridge id		STP enabled	interfaces
+	toto		8000.30b5c204e5fd	no		eth1
+
+
+
