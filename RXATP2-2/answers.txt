@@ -37,3 +37,19 @@ Switch(config)#no spanning-tree vlan 1 (desactive le protocole spanningtree)
 ------------------------
 mac-address-table <port security> <switchport port-security>
 
+/!\
+N'importe qui peut envoyer des trames sur un switch avec @MAC source qui va changer à chaque fois,
+L'attaquant peut spammer le switch (avec une @MAC fictive). Le switch va essayer de remplir sa table, qui va saturer. Les nouvelles trames qui vont arriver ne seront plus associées à un port car la table est pleine. Le message sera donc envoyé sur tous les ports (On pourra donc voir tout ce qu'il y aura sur le réseau).
+/!\
+
+- Solution :
+Port security
+
+- Fonctionnement :
+Machine une fois branchée à un port ne pourra pas essayer un autre port (mode sticky).
+On peut limiter le nombre d'@MAC associées à un port. (résout l'attaque)
+
+3 Boucles de commutation
+------------------------
+
+
