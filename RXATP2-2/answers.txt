@@ -32,10 +32,11 @@ Switch(config)#no spanning-tree vlan 1 (desactive le protocole spanningtree)
 	Une même adresse MAC ne peut pas avoir plusieurs ports mais l'inverse si !
 	On considère dans ce cas que la machine a changée de port
 
+Tip : sudo ifconfig eth<i> @IP netmask 255.255.255.0
 
 2 Sécurisation des ports
 ------------------------
-mac-address-table <port security> <switchport port-security>
+mac-address-table <port security> (<switchport port-security>)
 
 /!\
 N'importe qui peut envoyer des trames sur un switch avec @MAC source qui va changer à chaque fois,
@@ -49,7 +50,44 @@ Port security
 Machine une fois branchée à un port ne pourra pas essayer un autre port (mode sticky).
 On peut limiter le nombre d'@MAC associées à un port. (résout l'attaque)
 
+Ne résoud pas la copie de l'adresse MAC 
+=> 802.1x (identification par certificat)
+
+1)
+show mac-address-table 
+@MAC en Dynamic
+configure terminal
+interface FastEthernet 0/port
+port security max-mac-count 2
+
+- Les deux premières machines arrivent à se connecter, on peut les pinguer.
+La troisième machine ne fonctionne pas. (les deux premières adresses ont réservés chacune le port security)
+
+2)
+
+3)
+
+4)
+
+5)
+
 3 Boucles de commutation
 ------------------------
+1)
+Connexion de deux switchs entre eux avec un câble croisé
+Ensuite il faut mettre le mode no spanning tree sur minicom
+Le ping s'envoie en boucle à cause de l'envoi broadcast
+2)
+On refait le : arp -s <nomhote> <hw_addr> (configure manuellement une adresse)
+Lorsqu'on ajoute l'adresse fictive on remarque tout de même une boucle..
+Peut être que les switchs essayent de chercher à l'infini entre eux cette @MAC ?
 
+3)
+On peut afficher le nombre de (paquets/s) avec Statistics > Summary sur Wireshark
+Si on applique le filtre de storm control  (port storm-control broadcast threshold rising <nb> falling <nb2> cela ne suffit pas, il faut en bloquer au moins deux sur les 4 pour que cela réussise.
 
+stormcontrol avec forwarding : 
+Désactiver le storm control : no storm-control
+
+4 Bridge Linux
+--------------
