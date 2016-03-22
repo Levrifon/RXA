@@ -118,6 +118,13 @@ brctl showstp
 
 4) X
 
-5) Le Bridge B est devenu root car l'adresse MAC est la plus petite parmi les deux (même Priority ID)
+5) X
+
+6) Le Bridge B est devenu root car l'adresse MAC est la plus petite parmi les deux (même Priority ID)
 Les ports qui ne sont ni racine, ni désignés sont bloqués. Un port bloqué peut recevoir des paquets BPDU mais ne peut pas en émettre.
+
+7) Si l'election du bridge est celui le plus éloigné on a des pertes de performances
+
+8) speed 10 pour forcer en 10Mbit/s, les coups augmentent sauf sur le port de A où il est resté stable.
+
 
