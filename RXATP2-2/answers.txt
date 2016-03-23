@@ -105,23 +105,33 @@ ifconfig <bridge> @IP netmask 255.255.255.0 up
 5 Arbre recouvrant
 ------------------
 
-Que constatez vous ? Rien d'anormal
+Que constatez vous ? 
+La boucle est quand même présente malgré l'activation du no-spanning tree
 
-1) brctl stp <bridge> <state> 
-Rien d'intéressant à première vue
-brctl showstp
-=> le switch a bloqué une des interfaces "blocking" pour eviter le spam de messages
+1) brctl stp <bridge> on
+Ceci a permis d'éviter le flood sur le réseau
+brctl showstp <bridge>
+=> Changement du state d'un des ports en "Blocking" au lieu de "forwarding" pour éviter le spam
 
 2)Une fois débranché, le forwarding se fait sur les deux ports et non plus sur un seul
 
 3) Paquet CDP mais sinon rien d'autre .. (venant de SJ3)
 
-4) X
+4) Les BPDU envoyés de A sont reçues par B au début mais, après éléction du Noeud racine. Le root ne retransmet plus d'autres BPDU
 
-5) X
+5) 
+Le champ "Root Identifier" vient de l'emetteur
+Ensuite il y a election entre les deux candidats au root grâce au Root Path Cost et Bridge Identifier
 
-6) Le Bridge B est devenu root car l'adresse MAC est la plus petite parmi les deux (même Priority ID)
+
+
+6) Le S2 est devenu root car l'adresse MAC est la plus petite parmi les autres
 Les ports qui ne sont ni racine, ni désignés sont bloqués. Un port bloqué peut recevoir des paquets BPDU mais ne peut pas en émettre.
+La boucle est coupée S1 et B, le port de B est désactivé "Blocking" grâce au protocole stp
+Pour déterminer le "Port désigné", les switch vont comparer le RootPathCost des BPDU envoyés/reçus
+
+Sur les ponts non root, on choisit le port racine avec le RootPathCost le plus petit ainsi qu'avec le Bridge Identifier
+On obtient le chemin le plus court depuis la racine vers un noeud. 
 
 7) Si l'election du bridge est celui le plus éloigné on a des pertes de performances
 
