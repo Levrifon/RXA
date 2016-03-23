@@ -128,7 +128,7 @@ Ensuite il y a election entre les deux candidats au root grâce au Root Path Cos
 6) Le S2 est devenu root car l'adresse MAC est la plus petite parmi les autres
 Les ports qui ne sont ni racine, ni désignés sont bloqués. Un port bloqué peut recevoir des paquets BPDU mais ne peut pas en émettre.
 La boucle est coupée S1 et B, le port de B est désactivé "Blocking" grâce au protocole stp
-Pour déterminer le "Port désigné", les switch vont comparer le RootPathCost des BPDU envoyés/reçus
+Pour déterminer le "Port désigné", les switch vont comparer le RootPathCost des BPDU envoyés/reçus. Si les RPC sont identiques, on compare les port ids
 
 Sur les ponts non root, on choisit le port racine avec le RootPathCost le plus petit ainsi qu'avec le Bridge Identifier
 On obtient le chemin le plus court depuis la racine vers un noeud. 
