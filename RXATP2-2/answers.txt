@@ -119,10 +119,8 @@ brctl showstp <bridge>
 
 4) Les BPDU envoyés de A sont reçues par B au début mais, après éléction du Noeud racine. Le root ne retransmet plus d'autres BPDU
 
-5) 
-Le champ "Root Identifier" vient de l'emetteur
+5)Le champ "Root Identifier" vient de l'emetteur
 Ensuite il y a election entre les deux candidats au root grâce au Root Path Cost et Bridge Identifier
-
 
 
 6) Le S2 est devenu root car l'adresse MAC est la plus petite parmi les autres
@@ -136,5 +134,53 @@ On obtient le chemin le plus court depuis la racine vers un noeud.
 7) Si l'election du bridge est celui le plus éloigné on a des pertes de performances
 
 8) speed 10 pour forcer en 10Mbit/s, les coups augmentent sauf sur le port de A où il est resté stable.
+
+9)
+
+10)
+
+11)
+
+6 Isolation des échanges
+------------------------
+
+7 VLAN 
+------------------------
+1) Quand A diffuse il reçoit sur lui même et B même chose pour C et D.
+
+2) Table de commutation :
+ All    0013.7fc9.1280    STATIC      CPU                                       
+ All    0100.0ccc.cccc    STATIC      CPU                                       
+ All    0100.0ccc.cccd    STATIC      CPU                                       
+ All    0100.0cdd.dddd    STATIC      CPU                                       
+   2    30b5.c204.e5fd    DYNAMIC     Fa0/2 (Moi)                                    
+   2    30b5.c205.2dc7    DYNAMIC     Fa0/1 (2eme machine d'Axel)                                    
+   3    30b5.c204.f231    DYNAMIC     Fa0/4 (Axel)                                   
+   3    30b5.c205.1680    DYNAMIC     Fa0/3 (Theo) 
+
+On peut regrouper avec les numéros de VLAN : avantages => plus lisibles, modifications sont plus faciles si on connait le numéro.
+
+3) 
+
+A-------C	(S1)
+1	2         |
+		  |
+ (vlan1,vlan2)    |	
+		  |
+		  |
+B-------D	(S2)
+1	2		
+
+Les Vlans contiennent donc deux machines (C et D) et (A et C), les vlans sont sur le switch.
+
+
+8 Trunk
+-------
+1)
+interface FastEthernet 0/<port>
+switchport trunk native vlan 2
+
+
+2)
 
 
