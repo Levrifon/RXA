@@ -143,6 +143,7 @@ On obtient le chemin le plus court depuis la racine vers un noeud.
 
 6 Isolation des échanges
 ------------------------
+XXXX
 
 7 VLAN 
 ------------------------
@@ -160,22 +161,26 @@ On obtient le chemin le plus court depuis la racine vers un noeud.
 
 On peut regrouper avec les numéros de VLAN : avantages => plus lisibles, modifications sont plus faciles si on connait le numéro.
 
+Le VLan correspond à un domaine de broadcast.
+
 3) 
 
-A-------C	(S1)
-1	2         |
-		  |
+A-v--|----C	(S1)
+1 |	2         |
+  |		  |
  (vlan1,vlan2)    |	
-		  |
-		  |
-B-------D	(S2)
+  |		  |
+  |		  |
+B-^--|----D	(S2)
 1	2		
 
+On relit un port du switch sur le vlan1 et le deuxième port sur le vlan2
 Les Vlans contiennent donc deux machines (C et D) et (A et C), les vlans sont sur le switch.
 
 
-8 Trunk
+8 Trunk (protocol 801.q)
 -------
+#Intérêt : faire passer tout les VLAN par le même câble, les trames doivent bien être différenciées par le switch qui va le recevoir. (il faudra les numéroter)
 1)
 interface FastEthernet 0/<port>
 switchport trunk native vlan 2
