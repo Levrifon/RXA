@@ -180,12 +180,23 @@ Les Vlans contiennent donc deux machines (C et D) et (A et C), les vlans sont su
 
 8 Trunk (protocol 801.q)
 -------
+Lien Trunk : Un seul câble d'interconnexion sur lequel plusieurs VLAN passeront, mais les trames sont marquées (taggées) pour que les commutateurs sachent à quel Vlan elles appartiennent
+
 #Intérêt : faire passer tout les VLAN par le même câble, les trames doivent bien être différenciées par le switch qui va le recevoir. (il faudra les numéroter)
 1)
 interface FastEthernet 0/<port>
 switchport trunk native vlan 2
-
-
 2)
+
+3) Le champ identifiant VLAN fait 12 bits. (donc de 1 à 4094) On peut donc créer 4094/nb_interfaces VLAN différents sur le réseau.
+
+4) Sur les ports aux étrémités du trunk on ne peut avoir soit que du ISL soit que du 802.1q
+On peut avoir un nouveau TAG inséré entre le champ @MAC source et Type/Len de la trame
+
+5) Les paquets qui ne sont pas taggés 801.q sont redirigés vers le VLAN Natif
+
+6)
+
+7)
 
 
