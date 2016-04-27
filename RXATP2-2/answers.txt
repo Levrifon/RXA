@@ -174,7 +174,7 @@ A-v--|----C	(S1)
 B-^--|----D	(S2)
 1	2		
 
-On relit un port du switch sur le vlan1 et le deuxième port sur le vlan2
+On relit un port du switch 1 sur le vlan1 et le deuxième port switch 2 sur le vlan2
 Les Vlans contiennent donc deux machines (C et D) et (A et C), les vlans sont sur le switch.
 
 
@@ -184,6 +184,19 @@ Lien Trunk : Un seul câble d'interconnexion sur lequel plusieurs VLAN passeront
 
 #Intérêt : faire passer tout les VLAN par le même câble, les trames doivent bien être différenciées par le switch qui va le recevoir. (il faudra les numéroter)
 1)
+Ajouter nouveau vlan :
+	vlan database
+	vlan 2 name <name>
+	vlan 2 mtu <valeur>
+	exit
+Associer port au vlan:
+	configure terminal
+	interface FAstEthernet 0/1
+	switchport mode access
+	switchport access vlan 2
+	switchport trunk native vlan 2
+	end
+switchport mode trunk
 interface FastEthernet 0/<port>
 switchport trunk native vlan 2
 2)
