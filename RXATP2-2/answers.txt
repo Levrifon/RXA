@@ -65,11 +65,12 @@ La troisième machine ne fonctionne pas. (les deux premières adresses ont rése
 
 2)
 
-3)
+3)B ne communique pas avec A car l'@MAC correspond à celle de C
+Le ping fonctionne car SW2 connait @MAC de C
 
 4)
 
-5)
+5) On utilise la commande "interface range FastEthernet 0/port FastEthernet 0/x
 
 3 Boucles de commutation
 ------------------------
@@ -105,7 +106,7 @@ ifconfig <bridge> @IP netmask 255.255.255.0 up
 5 Arbre recouvrant
 ------------------
 
-Que constatez vous ? 
+Que constatez vous ?
 La boucle est quand même présente malgré l'activation du no-spanning tree
 
 1) brctl stp <bridge> on
@@ -135,7 +136,7 @@ On obtient le chemin le plus court depuis la racine vers un noeud.
 
 8) speed 10 pour forcer en 10Mbit/s, les coups augmentent sauf sur le port de A où il est resté stable.
 
-9)
+9) Un délai de 30 secondes est nécessaire, l'interface passe en listening,Learning B passe par le switch S1
 
 10)
 
@@ -143,11 +144,12 @@ On obtient le chemin le plus court depuis la racine vers un noeud.
 
 6 Isolation des échanges
 ------------------------
-XXXX
+Les ports protégés permettent de ne pas voir le traffic d'un autre user sur le même switch
 
 7 VLAN 
 ------------------------
-1) Quand A diffuse il reçoit sur lui même et B même chose pour C et D.
+1) Quand A diffuse seul B reçoit (même domaine de BRoadcast)
+C et D sont donc dans un autre domaine de broadcast (vlan ou lan ou reseau ethernet)
 
 2) Table de commutation :
  All    0013.7fc9.1280    STATIC      CPU                                       
@@ -159,7 +161,7 @@ XXXX
    3    30b5.c204.f231    DYNAMIC     Fa0/4 (Axel)                                   
    3    30b5.c205.1680    DYNAMIC     Fa0/3 (Theo) 
 
-On peut regrouper avec les numéros de VLAN : avantages => plus lisibles, modifications sont plus faciles si on connait le numéro.
+On peut regrouper avec les numéros de VLAN : avantages => plus lisibles, modifications sont plus faciles si on connait le numéro. permet de réduire l'usage des câbles et des ports.
 
 Le VLan correspond à un domaine de broadcast.
 
@@ -180,6 +182,8 @@ Les Vlans contiennent donc deux machines (C et D) et (A et C), les vlans sont su
 
 8 Trunk (protocol 801.q)
 -------
+Switchport trunk allowed 10 ==> seulement sur le vlan 10
+
 Lien Trunk : Un seul câble d'interconnexion sur lequel plusieurs VLAN passeront, mais les trames sont marquées (taggées) pour que les commutateurs sachent à quel Vlan elles appartiennent
 
 #Intérêt : faire passer tout les VLAN par le même câble, les trames doivent bien être différenciées par le switch qui va le recevoir. (il faudra les numéroter)
@@ -199,7 +203,8 @@ Associer port au vlan:
 switchport mode trunk
 interface FastEthernet 0/<port>
 switchport trunk native vlan 2
-2)
+
+2) Dans la trame on rajoute un identifiant de VLAN pour savoir à qui il faut l'envoyer.
 
 3) Le champ identifiant VLAN fait 12 bits. (donc de 1 à 4094) On peut donc créer 4094/nb_interfaces VLAN différents sur le réseau.
 
@@ -210,6 +215,40 @@ On peut avoir un nouveau TAG inséré entre le champ @MAC source et Type/Len de 
 
 6)
 
-7)
+7) DTP permet d'activer ou retirer le mode trunk dynamiquement.
+
+9 Surveillance de port
+----------------------
+Utilisation de SPAN (port mirroring), IDS (Intrusion Detection System)
+
+10 VTP
+----------
+Si on a beaucoup d'équipement réseau on peut configurer la liste des VLAN sur un seul switch , qui sera transmise à tout les autres switch du réseau (VLAN TRUNKING PROTOCOL)
+
+Informations contiennent principalement la liste des VLAN
+
+Mode Transparent : quand il reçoit une annonce VTP => il n'en prend pas compte et va les forwarder
+
+1)
+
+2)On change la base de données des VLAN sur SW1, on peut donc créer de multiples VLAN (fictifs) et saturer le réseau en se connectant sur le switch (en mode server VTP)
+
+3)switchport trunk prunking permet de faire la transmission VTP sur les VLAN de S1
+
+4) Cher à modifier (normes inspirées des protocoles propriétaires), voir sur le long terme si c'est utile d'utiliser du propriétaire. Attention au mélange des différentes marques de switch (hp, dell ..).
+
+12 Trunk et Serveur
+-------------------
+1) Vu
+
+2) Pas de question 2
+
+3) switchport trunk allowed 2
+
+4) mode transparent le poste reçoit les màj du SW2, les mises à jour sont prises en compte sur le switch 2
+
+13 Agrégation de liens
+----------------------
+Meme @MAC source ===> même lien physique (pas forcément lissé en répartition sur les liens)
 
 
